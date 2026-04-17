@@ -2,11 +2,14 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Play, Film, Upload, Users } from "lucide-react";
+import { Play, Upload, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useVideos } from "@/hooks/useVideos";
+import { VideoGrid } from "@/components/VideoGrid";
 
 const Index = () => {
   const { user } = useAuth();
+  const { videos, loading } = useVideos({ limit: 12 });
 
   useEffect(() => {
     document.title = "MeTube — vídeos, shorts y comunidad";
@@ -32,7 +35,7 @@ const Index = () => {
           <div className="mt-8 flex flex-wrap gap-3">
             {user ? (
               <>
-                <Button asChild size="lg"><Link to="/profile"><Users className="mr-2 h-4 w-4" />Mi perfil</Link></Button>
+                <Button asChild size="lg"><Link to="/upload"><Upload className="mr-2 h-4 w-4" />Subir vídeo</Link></Button>
                 <Button asChild size="lg" variant="outline"><Link to="/explore"><Play className="mr-2 h-4 w-4" />Explorar</Link></Button>
               </>
             ) : (
@@ -45,11 +48,24 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Recent videos */}
+      <section>
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="font-display text-2xl font-semibold tracking-tight">Recomendado</h2>
+          <Link to="/explore" className="text-sm text-muted-foreground hover:text-foreground transition">Ver todo →</Link>
+        </div>
+        <VideoGrid
+          videos={videos}
+          loading={loading}
+          emptyText={user ? "Aún no hay vídeos. ¡Sé el primero en subir uno!" : "Aún no hay vídeos. Crea una cuenta para empezar."}
+        />
+      </section>
+
       {/* Feature cards */}
-      <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+      <section className="grid sm:grid-cols-3 gap-4 mt-10">
         {[
-          { icon: Upload, title: "Sube tus vídeos", desc: "Archivo propio o URL externa. Tú eliges." },
-          { icon: Film, title: "Shorts verticales", desc: "Feed inmersivo a pantalla completa." },
+          { icon: Upload, title: "Sube tus vídeos", desc: "Archivo propio o URL externa." },
+          { icon: Play, title: "Reproduce sin fricción", desc: "Player limpio en negro puro." },
           { icon: Users, title: "Tu canal, tu comunidad", desc: "Convierte tu cuenta en canal en un clic." },
         ].map((f) => (
           <div key={f.title} className="glass-card p-6 rounded-xl hover-lift">
@@ -58,18 +74,6 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">{f.desc}</p>
           </div>
         ))}
-      </section>
-
-      {/* Empty state for videos */}
-      <section>
-        <div className="flex items-baseline justify-between mb-4">
-          <h2 className="font-display text-2xl font-semibold">Recomendado</h2>
-          <Link to="/explore" className="text-sm text-muted-foreground hover:text-foreground transition">Ver todo →</Link>
-        </div>
-        <div className="glass-card rounded-xl p-12 text-center">
-          <Film className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
-          <p className="text-muted-foreground">Aún no hay vídeos. {user ? "¡Sé el primero en subir uno!" : "Crea una cuenta para empezar."}</p>
-        </div>
       </section>
     </AppLayout>
   );
