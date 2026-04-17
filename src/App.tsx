@@ -8,6 +8,12 @@ import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import Profile from "./pages/Profile.tsx";
 import Admin from "./pages/Admin.tsx";
+import Upload from "./pages/Upload.tsx";
+import Watch from "./pages/Watch.tsx";
+import Channel from "./pages/Channel.tsx";
+import Explore from "./pages/Explore.tsx";
+import Shorts from "./pages/Shorts.tsx";
+import Subscriptions from "./pages/Subscriptions.tsx";
 import ComingSoon from "./pages/ComingSoon.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -25,11 +31,13 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
-            <Route path="/explore" element={<ComingSoon title="Explorar" />} />
-            <Route path="/shorts" element={<ComingSoon title="Shorts" />} />
+            <Route path="/upload" element={<Upload />} />
+            <Route path="/watch/:id" element={<Watch />} />
+            <Route path="/c/:id" element={<Channel />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/shorts" element={<Shorts />} />
+            <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/playlists" element={<ComingSoon title="Listas" />} />
-            <Route path="/subscriptions" element={<ComingSoon title="Suscripciones" />} />
-            <Route path="/upload" element={<ComingSoon title="Subir vídeo" />} />
             <Route path="/settings" element={<ComingSoon title="Ajustes" />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
