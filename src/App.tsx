@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import Profile from "./pages/Profile.tsx";
+import Studio from "./pages/Studio.tsx";
 import Admin from "./pages/Admin.tsx";
 import Upload from "./pages/Upload.tsx";
 import Watch from "./pages/Watch.tsx";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/studio" element={<Studio />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/upload" element={<Upload />} />
             <Route path="/watch/:id" element={<Watch />} />
