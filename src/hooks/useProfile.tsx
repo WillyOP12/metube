@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
+export interface SocialLinks {
+  twitter?: string;
+  instagram?: string;
+  youtube?: string;
+  tiktok?: string;
+  website?: string;
+  github?: string;
+}
+
 export interface Profile {
   id: string;
   username: string | null;
@@ -12,6 +21,10 @@ export interface Profile {
   is_channel: boolean;
   channel_name: string | null;
   subscriber_count: number;
+  social_links: SocialLinks;
+  accent_color: string | null;
+  location: string | null;
+  language: string | null;
 }
 
 export const useProfile = () => {
