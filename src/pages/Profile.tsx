@@ -42,15 +42,37 @@ const ProfileInner = () => {
 
   const handleAvatar = async (file: File) => {
     if (!user) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("La imagen no puede superar los 5MB");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Solo se permiten imágenes");
+      return;
+    }
     setUploading(true);
-    const ext = file.name.split(".").pop();
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
     const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-    if (upErr) { toast.error("Error al subir avatar"); setUploading(false); return; }
+    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, {
+      upsert: false,
+      contentType: file.type,
+      cacheControl: "3600",
+    });
+    if (upErr) {
+      console.error("Avatar upload error:", upErr);
+      toast.error(`Error al subir: ${upErr.message}`);
+      setUploading(false);
+      return;
+    }
     const { data } = supabase.storage.from("avatars").getPublicUrl(path);
     const { error: dbErr } = await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
-    if (dbErr) toast.error("Error guardando avatar");
-    else { toast.success("Avatar actualizado"); refresh(); }
+    if (dbErr) {
+      console.error("Profile update error:", dbErr);
+      toast.error("Error guardando avatar");
+    } else {
+      toast.success("Avatar actualizado");
+      refresh();
+    }
     setUploading(false);
   };
 
