@@ -14,6 +14,8 @@ import Channel from "./pages/Channel.tsx";
 import Explore from "./pages/Explore.tsx";
 import Shorts from "./pages/Shorts.tsx";
 import Subscriptions from "./pages/Subscriptions.tsx";
+import Playlists from "./pages/Playlists.tsx";
+import PlaylistDetail from "./pages/PlaylistDetail.tsx";
 import ComingSoon from "./pages/ComingSoon.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -37,7 +39,8 @@ const App = () => (
             <Route path="/explore" element={<Explore />} />
             <Route path="/shorts" element={<Shorts />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
-            <Route path="/playlists" element={<ComingSoon title="Listas" />} />
+            <Route path="/playlists" element={<Playlists />} />
+            <Route path="/playlist/:id" element={<PlaylistDetail />} />
             <Route path="/settings" element={<ComingSoon title="Ajustes" />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

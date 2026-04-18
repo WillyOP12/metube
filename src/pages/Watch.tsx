@@ -15,6 +15,7 @@ import { es } from "date-fns/locale";
 import { formatViews } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { VideoCard } from "@/components/VideoCard";
+import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
 import { toast } from "sonner";
 
 const Watch = () => {
@@ -112,6 +113,7 @@ const Watch = () => {
                 </Button>
               </div>
               <Button variant="outline" size="sm" onClick={share} className="gap-2"><Share2 className="h-4 w-4" />Compartir</Button>
+              <AddToPlaylistDialog videoId={video.id} />
               <ReportDialog targetType="video" targetId={video.id} variant="outline" />
             </div>
           </div>

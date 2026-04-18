@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { VideoGrid } from "@/components/VideoGrid";
 import { ReportDialog } from "@/components/ReportDialog";
+import { CommunityPosts } from "@/components/CommunityPosts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useVideos } from "@/hooks/useVideos";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -82,10 +84,18 @@ const Channel = () => {
           </div>
         </div>
 
-        <div className="mt-8">
-          <h2 className="font-display text-xl font-semibold mb-4">Vídeos</h2>
-          <VideoGrid videos={videos} loading={videosLoading} emptyText="Este canal aún no tiene vídeos." />
-        </div>
+        <Tabs defaultValue="videos" className="mt-8">
+          <TabsList className="bg-surface-1 border border-border">
+            <TabsTrigger value="videos">Vídeos</TabsTrigger>
+            <TabsTrigger value="community">Comunidad</TabsTrigger>
+          </TabsList>
+          <TabsContent value="videos" className="mt-6">
+            <VideoGrid videos={videos} loading={videosLoading} emptyText="Este canal aún no tiene vídeos." />
+          </TabsContent>
+          <TabsContent value="community" className="mt-6">
+            <CommunityPosts channelId={profile.id} channel={profile} />
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );
