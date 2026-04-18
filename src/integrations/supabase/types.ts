@@ -226,6 +226,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accent_color: string | null
           avatar_url: string | null
           banner_url: string | null
           bio: string | null
@@ -234,11 +235,15 @@ export type Database = {
           display_name: string | null
           id: string
           is_channel: boolean
+          language: string | null
+          location: string | null
+          social_links: Json
           subscriber_count: number
           updated_at: string
           username: string | null
         }
         Insert: {
+          accent_color?: string | null
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
@@ -247,11 +252,15 @@ export type Database = {
           display_name?: string | null
           id: string
           is_channel?: boolean
+          language?: string | null
+          location?: string | null
+          social_links?: Json
           subscriber_count?: number
           updated_at?: string
           username?: string | null
         }
         Update: {
+          accent_color?: string | null
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
@@ -260,6 +269,9 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_channel?: boolean
+          language?: string | null
+          location?: string | null
+          social_links?: Json
           subscriber_count?: number
           updated_at?: string
           username?: string | null

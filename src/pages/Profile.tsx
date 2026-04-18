@@ -164,9 +164,14 @@ const ProfileInner = () => {
         </div>
 
         {isChannel && (
-          <div className="mt-5">
-            <Label htmlFor="cn">Nombre del canal</Label>
-            <Input id="cn" value={channelName} onChange={(e) => setChannelName(e.target.value)} placeholder={displayName} className="bg-surface-1 mt-1" />
+          <div className="mt-5 space-y-3">
+            <div>
+              <Label htmlFor="cn">Nombre del canal</Label>
+              <Input id="cn" value={channelName} onChange={(e) => setChannelName(e.target.value)} placeholder={displayName} className="bg-surface-1 mt-1" />
+            </div>
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <a href="/studio">✨ Personaliza tu canal en Studio →</a>
+            </Button>
           </div>
         )}
       </Card>

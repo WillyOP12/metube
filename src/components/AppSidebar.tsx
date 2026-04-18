@@ -1,4 +1,4 @@
-import { Home, Compass, Film, ListVideo, Users, Flag, User as UserIcon, Settings, Upload } from "lucide-react";
+import { Home, Compass, Film, ListVideo, Users, Flag, User as UserIcon, Settings, Upload, Sparkles } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -82,14 +82,24 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {profile?.is_channel && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <NavLink to="/upload" className={linkClass("/upload")}>
-                        <Upload className="h-5 w-5 shrink-0" />
-                        {!collapsed && <span className="font-medium">Subir vídeo</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <NavLink to="/studio" className={linkClass("/studio")}>
+                          <Sparkles className="h-5 w-5 shrink-0" />
+                          {!collapsed && <span className="font-medium">Studio</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <NavLink to="/upload" className={linkClass("/upload")}>
+                          <Upload className="h-5 w-5 shrink-0" />
+                          {!collapsed && <span className="font-medium">Subir vídeo</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </>
                 )}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
