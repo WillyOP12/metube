@@ -1,4 +1,4 @@
-import { Home, Compass, Film, ListVideo, Users, Flag, User as UserIcon, Settings, Upload, Sparkles } from "lucide-react";
+import { Home, Compass, Film, ListVideo, Users, Flag, User as UserIcon, Settings, Upload, Sparkles, History, ThumbsUp, Clock } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -25,6 +25,12 @@ const mainNav = [
   { title: "Suscripciones", url: "/subscriptions", icon: Users },
 ];
 
+const libraryNav = [
+  { title: "Historial", url: "/history", icon: History },
+  { title: "Ver más tarde", url: "/watch-later", icon: Clock },
+  { title: "Me gusta", url: "/liked", icon: ThumbsUp },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -43,6 +49,17 @@ export function AppSidebar() {
         : "hover:bg-sidebar-accent/60 text-sidebar-foreground"
     }`;
 
+  const renderItem = (item: { title: string; url: string; icon: any }) => (
+    <SidebarMenuItem key={item.url}>
+      <SidebarMenuButton asChild>
+        <NavLink to={item.url} end={item.url === "/"} className={linkClass(item.url)}>
+          <item.icon className="h-5 w-5 shrink-0" />
+          {!collapsed && <span className="font-medium">{item.title}</span>}
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border">
       <SidebarHeader className="px-4 py-4 border-b border-sidebar-border">
@@ -53,20 +70,18 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>Navegar</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNav.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === "/"} className={linkClass(item.url)}>
-                      <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span className="font-medium">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <SidebarMenu>{mainNav.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {user && (
+          <SidebarGroup>
+            <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>Biblioteca</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>{libraryNav.map(renderItem)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {user && (
           <SidebarGroup>
@@ -123,7 +138,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to="/admin" className={linkClass("/admin")}>
                       <Flag className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span className="font-medium">Reportes</span>}
+                      {!collapsed && <span className="font-medium">Admin</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

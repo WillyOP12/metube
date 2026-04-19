@@ -1,4 +1,4 @@
-import { Search, LogIn, LogOut, User as UserIcon } from "lucide-react";
+import { Search, LogIn, LogOut, User as UserIcon, Settings as SettingsIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useState } from "react";
+import { NotificationsBell } from "./NotificationsBell";
 
 export const Topbar = () => {
   const { user, signOut } = useAuth();
@@ -24,7 +25,7 @@ export const Topbar = () => {
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (q.trim()) navigate(`/explore?q=${encodeURIComponent(q.trim())}`);
+    if (q.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
   };
 
   const initials = (profile?.display_name || profile?.username || "?")
@@ -39,12 +40,13 @@ export const Topbar = () => {
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar vídeos, canales, posts..."
+          placeholder="Buscar vídeos, canales, listas..."
           className="pl-10 h-10 bg-surface-1 border-border focus-visible:ring-1 focus-visible:ring-ring"
         />
       </form>
 
       <div className="flex items-center gap-2">
+        {user && <NotificationsBell />}
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -64,6 +66,8 @@ export const Topbar = () => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild><Link to="/profile"><UserIcon className="mr-2 h-4 w-4" />Mi perfil</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link to="/settings"><SettingsIcon className="mr-2 h-4 w-4" />Ajustes</Link></DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Cerrar sesión</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
