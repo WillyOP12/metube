@@ -62,8 +62,8 @@ const StudioInner = () => {
       setBannerUrl(url);
       toast.success("Banner actualizado");
       refresh();
-    } catch (e: any) {
-      toast.error(e.message || "Error subiendo banner");
+    } catch (e) {
+      toast.error("No se pudo subir el banner. Inténtalo de nuevo.");
     } finally {
       setUploadingBanner(false);
     }

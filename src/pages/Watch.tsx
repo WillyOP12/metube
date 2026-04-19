@@ -30,11 +30,11 @@ const Watch = () => {
     if (video?.title) document.title = `${video.title} — MeTube`;
   }, [video?.title]);
 
-  // Increment view once
+  // Increment view once via secure server-side RPC
   useEffect(() => {
     if (video && !viewedRef.current) {
       viewedRef.current = true;
-      supabase.from("videos").update({ views: video.views + 1 }).eq("id", video.id);
+      supabase.rpc("increment_video_view", { _video_id: video.id });
     }
   }, [video]);
 
