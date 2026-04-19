@@ -1,4 +1,4 @@
-import { Home, Compass, Film, ListVideo, Users, Flag, User as UserIcon, Settings, Upload, Sparkles, History, ThumbsUp, Clock } from "lucide-react";
+import { Home, Compass, Film, ListVideo, Users, Flag, User as UserIcon, Settings, Upload, Sparkles, History, ThumbsUp, Clock, MessageSquare } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -23,6 +23,7 @@ const mainNav = [
   { title: "Shorts", url: "/shorts", icon: Film },
   { title: "Listas", url: "/playlists", icon: ListVideo },
   { title: "Suscripciones", url: "/subscriptions", icon: Users },
+  { title: "Comunidad", url: "/community", icon: MessageSquare },
 ];
 
 const libraryNav = [
