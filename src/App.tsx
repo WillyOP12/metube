@@ -15,6 +15,7 @@ import Channel from "./pages/Channel.tsx";
 import Explore from "./pages/Explore.tsx";
 import Shorts from "./pages/Shorts.tsx";
 import Subscriptions from "./pages/Subscriptions.tsx";
+import Community from "./pages/Community.tsx";
 import Playlists from "./pages/Playlists.tsx";
 import PlaylistDetail from "./pages/PlaylistDetail.tsx";
 import Search from "./pages/Search.tsx";
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/explore" element={<Explore />} />
             <Route path="/shorts" element={<Shorts />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
+            <Route path="/community" element={<Community />} />
             <Route path="/playlists" element={<Playlists />} />
             <Route path="/playlist/:id" element={<PlaylistDetail />} />
             <Route path="/search" element={<Search />} />
