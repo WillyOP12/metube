@@ -17,7 +17,11 @@ import Shorts from "./pages/Shorts.tsx";
 import Subscriptions from "./pages/Subscriptions.tsx";
 import Playlists from "./pages/Playlists.tsx";
 import PlaylistDetail from "./pages/PlaylistDetail.tsx";
-import ComingSoon from "./pages/ComingSoon.tsx";
+import Search from "./pages/Search.tsx";
+import History from "./pages/History.tsx";
+import LikedVideos from "./pages/LikedVideos.tsx";
+import WatchLater from "./pages/WatchLater.tsx";
+import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -43,7 +47,11 @@ const App = () => (
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/playlists" element={<Playlists />} />
             <Route path="/playlist/:id" element={<PlaylistDetail />} />
-            <Route path="/settings" element={<ComingSoon title="Ajustes" />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/liked" element={<LikedVideos />} />
+            <Route path="/watch-later" element={<WatchLater />} />
+            <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

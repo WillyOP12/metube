@@ -7,9 +7,12 @@ import { ReportDialog } from "@/components/ReportDialog";
 import { useVideo, useVideos } from "@/hooks/useVideos";
 import { useLikes } from "@/hooks/useLikes";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useWatchLater } from "@/hooks/useWatchLater";
+import { useHistory } from "@/hooks/useHistory";
+import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, BellPlus, BellRing, Share2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, BellPlus, BellRing, Share2, Clock, Check } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatViews } from "@/lib/format";
@@ -24,6 +27,9 @@ const Watch = () => {
   const { likes, dislikes, mine, toggle } = useLikes(id);
   const { subscribed, count, toggle: toggleSub, isOwner } = useSubscription(video?.channel_id);
   const { videos: related } = useVideos({ limit: 8 });
+  const { user } = useAuth();
+  const { isInList, add: addToWL, remove: removeFromWL } = useWatchLater();
+  const { log: logHistory } = useHistory();
   const viewedRef = useRef(false);
 
   useEffect(() => {
@@ -35,8 +41,9 @@ const Watch = () => {
     if (video && !viewedRef.current) {
       viewedRef.current = true;
       supabase.rpc("increment_video_view", { _video_id: video.id });
+      if (user) logHistory(video.id);
     }
-  }, [video]);
+  }, [video, user]);
 
   if (loading) {
     return (
@@ -113,6 +120,16 @@ const Watch = () => {
                 </Button>
               </div>
               <Button variant="outline" size="sm" onClick={share} className="gap-2"><Share2 className="h-4 w-4" />Compartir</Button>
+              {user && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => isInList(video.id) ? removeFromWL(video.id) : addToWL(video.id)}
+                  className="gap-2"
+                >
+                  {isInList(video.id) ? <><Check className="h-4 w-4" />Guardado</> : <><Clock className="h-4 w-4" />Ver más tarde</>}
+                </Button>
+              )}
               <AddToPlaylistDialog videoId={video.id} />
               <ReportDialog targetType="video" targetId={video.id} variant="outline" />
             </div>

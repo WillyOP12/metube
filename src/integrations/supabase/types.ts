@@ -91,6 +91,39 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          read: boolean
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          read?: boolean
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          read?: boolean
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       playlist_videos: {
         Row: {
           added_at: string
@@ -423,11 +456,54 @@ export type Database = {
           },
         ]
       }
+      watch_history: {
+        Row: {
+          id: string
+          user_id: string
+          video_id: string
+          watched_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          video_id: string
+          watched_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          video_id?: string
+          watched_at?: string
+        }
+        Relationships: []
+      }
+      watch_later: {
+        Row: {
+          added_at: string
+          id: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      delete_my_account: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -440,6 +516,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "moderator" | "user"
       like_type: "like" | "dislike"
+      notification_type:
+        | "new_video"
+        | "new_comment"
+        | "new_like"
+        | "new_subscriber"
+        | "new_reply"
+        | "report_resolved"
       report_status: "pending" | "reviewing" | "resolved" | "dismissed"
       report_target: "video" | "comment" | "post" | "channel"
       video_source: "upload" | "external"
@@ -572,6 +655,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user"],
       like_type: ["like", "dislike"],
+      notification_type: [
+        "new_video",
+        "new_comment",
+        "new_like",
+        "new_subscriber",
+        "new_reply",
+        "report_resolved",
+      ],
       report_status: ["pending", "reviewing", "resolved", "dismissed"],
       report_target: ["video", "comment", "post", "channel"],
       video_source: ["upload", "external"],
