@@ -120,6 +120,16 @@ const Watch = () => {
                 </Button>
               </div>
               <Button variant="outline" size="sm" onClick={share} className="gap-2"><Share2 className="h-4 w-4" />Compartir</Button>
+              {user && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => isInList(video.id) ? removeFromWL(video.id) : addToWL(video.id)}
+                  className="gap-2"
+                >
+                  {isInList(video.id) ? <><Check className="h-4 w-4" />Guardado</> : <><Clock className="h-4 w-4" />Ver más tarde</>}
+                </Button>
+              )}
               <AddToPlaylistDialog videoId={video.id} />
               <ReportDialog targetType="video" targetId={video.id} variant="outline" />
             </div>
