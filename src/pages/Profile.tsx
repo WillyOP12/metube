@@ -59,16 +59,14 @@ const ProfileInner = () => {
       cacheControl: "3600",
     });
     if (upErr) {
-      console.error("Avatar upload error:", upErr);
-      toast.error(`Error al subir: ${upErr.message}`);
+      toast.error("No se pudo subir el avatar. Inténtalo de nuevo.");
       setUploading(false);
       return;
     }
     const { data } = supabase.storage.from("avatars").getPublicUrl(path);
     const { error: dbErr } = await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
     if (dbErr) {
-      console.error("Profile update error:", dbErr);
-      toast.error("Error guardando avatar");
+      toast.error("No se pudo guardar el avatar.");
     } else {
       toast.success("Avatar actualizado");
       refresh();
