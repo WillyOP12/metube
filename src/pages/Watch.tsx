@@ -41,8 +41,9 @@ const Watch = () => {
     if (video && !viewedRef.current) {
       viewedRef.current = true;
       supabase.rpc("increment_video_view", { _video_id: video.id });
+      if (user) logHistory(video.id);
     }
-  }, [video]);
+  }, [video, user]);
 
   if (loading) {
     return (
