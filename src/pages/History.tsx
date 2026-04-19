@@ -33,7 +33,7 @@ const Inner = () => {
           </Button>
         )}
       </div>
-      <VideoGrid videos={videos} loading={loading} emptyMessage="Tu historial está vacío. ¡Empieza a ver vídeos!" />
+      <VideoGrid videos={videos} loading={loading} emptyText="Tu historial está vacío. ¡Empieza a ver vídeos!" />
     </div>
   );
 };

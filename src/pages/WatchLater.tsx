@@ -18,7 +18,7 @@ const Inner = () => {
           <p className="text-sm text-muted-foreground">Tus vídeos guardados.</p>
         </div>
       </div>
-      <VideoGrid videos={videos} loading={loading} emptyMessage="Sin vídeos guardados. Usa el botón 'Ver más tarde' en cualquier vídeo." />
+      <VideoGrid videos={videos} loading={loading} emptyText="Sin vídeos guardados. Usa el botón 'Ver más tarde' en cualquier vídeo." />
     </div>
   );
 };

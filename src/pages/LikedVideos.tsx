@@ -18,7 +18,7 @@ const Inner = () => {
           <p className="text-sm text-muted-foreground">Vídeos a los que has dado like.</p>
         </div>
       </div>
-      <VideoGrid videos={videos} loading={loading} emptyMessage="Aún no has dado like a ningún vídeo." />
+      <VideoGrid videos={videos} loading={loading} emptyText="Aún no has dado like a ningún vídeo." />
     </div>
   );
 };
