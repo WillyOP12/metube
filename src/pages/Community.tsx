@@ -33,9 +33,13 @@ interface FeedPost {
 
 const Community = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [scope, setScope] = useState<"subs" | "all">("subs");
+  const [content, setContent] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [posting, setPosting] = useState(false);
 
   useEffect(() => {
     document.title = "Comunidad — MeTube";
