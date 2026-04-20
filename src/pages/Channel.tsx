@@ -16,6 +16,7 @@ const Channel = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [postCount, setPostCount] = useState(0);
   const { videos, loading: videosLoading } = useVideos({ channelId: id });
   const { subscribed, count, toggle, isOwner } = useSubscription(id);
 
@@ -23,8 +24,12 @@ const Channel = () => {
     const load = async () => {
       if (!id) return;
       setLoading(true);
-      const { data } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
+      const [{ data }, { count: pc }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
+        supabase.from("posts").select("id", { count: "exact", head: true }).eq("channel_id", id),
+      ]);
       setProfile(data as Profile | null);
+      setPostCount(pc ?? 0);
       setLoading(false);
       if (data?.display_name) document.title = `${data.display_name} — MeTube`;
     };
@@ -38,6 +43,9 @@ const Channel = () => {
   if (!profile) {
     return <AppLayout><div className="text-center py-20 text-muted-foreground">Canal no encontrado.</div></AppLayout>;
   }
+
+  // La pestaña de comunidad solo se muestra si es un canal Y (es propietario o ya tiene posts)
+  const showCommunity = profile.is_channel && (isOwner || postCount > 0);
 
   return (
     <AppLayout>
@@ -55,14 +63,16 @@ const Channel = () => {
         <Tabs defaultValue="videos" className="mt-8">
           <TabsList className="bg-surface-1 border border-border">
             <TabsTrigger value="videos">Vídeos</TabsTrigger>
-            <TabsTrigger value="community">Comunidad</TabsTrigger>
+            {showCommunity && <TabsTrigger value="community">Comunidad</TabsTrigger>}
           </TabsList>
           <TabsContent value="videos" className="mt-6">
             <VideoGrid videos={videos} loading={videosLoading} emptyText="Este canal aún no tiene vídeos." />
           </TabsContent>
-          <TabsContent value="community" className="mt-6">
-            <CommunityPosts channelId={profile.id} channel={profile} />
-          </TabsContent>
+          {showCommunity && (
+            <TabsContent value="community" className="mt-6">
+              <CommunityPosts channelId={profile.id} channel={profile} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </AppLayout>

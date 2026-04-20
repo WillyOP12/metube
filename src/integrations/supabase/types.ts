@@ -124,6 +124,35 @@ export type Database = {
         }
         Relationships: []
       }
+      playlist_subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          playlist_id: string
+          subscriber_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          playlist_id: string
+          subscriber_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          playlist_id?: string
+          subscriber_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playlist_subscriptions_playlist_id_fkey"
+            columns: ["playlist_id"]
+            isOneToOne: false
+            referencedRelation: "playlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       playlist_videos: {
         Row: {
           added_at: string
