@@ -171,6 +171,45 @@ const Community = () => {
           </div>
         </div>
 
+        {user && (
+          <Card className="glass-card p-4 mb-6">
+            <div className="flex gap-3">
+              <Avatar className="h-10 w-10 border border-border">
+                <AvatarImage src={profile?.avatar_url ?? undefined} />
+                <AvatarFallback className="bg-surface-2 text-xs">{profileInitials}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 space-y-3">
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value.slice(0, 500))}
+                  placeholder="Comparte algo con tu comunidad..."
+                  className="bg-surface-1 min-h-20 resize-none"
+                />
+                {image && (
+                  <div className="relative inline-block">
+                    <img src={URL.createObjectURL(image)} alt="" className="max-h-40 rounded-lg" />
+                    <button onClick={() => setImage(null)} className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/90 flex items-center justify-center">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <label className="cursor-pointer text-muted-foreground hover:text-foreground transition">
+                    <ImagePlus className="h-5 w-5" />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground">{content.length}/500</span>
+                    <Button onClick={submitPost} disabled={posting || !content.trim()} size="sm">
+                      {posting ? "Publicando..." : "Publicar"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="h-7 w-7 rounded-full border-2 border-foreground/20 border-t-foreground animate-spin" />
