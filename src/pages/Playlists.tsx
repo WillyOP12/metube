@@ -113,6 +113,31 @@ const PlaylistsInner = () => {
           ))}
         </div>
       )}
+
+      {!subLoading && subscribedPlaylists.length > 0 && (
+        <div className="mt-12">
+          <h2 className="font-display text-xl font-bold tracking-tight mb-4 flex items-center gap-2">
+            <BellRing className="h-5 w-5" />Listas suscritas
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {subscribedPlaylists.map((p: any) => (
+              <Card key={p.id} className="glass-card overflow-hidden group">
+                <Link to={`/playlist/${p.id}`} className="block">
+                  <div className="aspect-video bg-surface-2 flex items-center justify-center">
+                    <ListVideo className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-display font-semibold truncate">{p.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                      <Globe className="h-3 w-3" />Pública
+                    </p>
+                  </div>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
