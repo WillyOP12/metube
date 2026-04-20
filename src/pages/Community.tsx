@@ -119,6 +119,34 @@ const Community = () => {
     setPosts(prev => prev.map(p => p.id === post.id ? { ...p, liked: !p.liked, likes: p.likes + (p.liked ? -1 : 1) } : p));
   };
 
+  const submitPost = async () => {
+    if (!user) { toast.error("Inicia sesión para publicar"); return; }
+    if (!content.trim()) { toast.error("Escribe algo antes de publicar"); return; }
+    setPosting(true);
+    let imageUrl: string | null = null;
+    if (image) {
+      if (image.size > 5 * 1024 * 1024) { toast.error("La imagen no puede superar 5MB"); setPosting(false); return; }
+      const ext = (image.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${user.id}/post-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("post-images").upload(path, image, { contentType: image.type, cacheControl: "3600", upsert: false });
+      if (upErr) { toast.error(`Error subiendo imagen: ${upErr.message}`); setPosting(false); return; }
+      imageUrl = supabase.storage.from("post-images").getPublicUrl(path).data.publicUrl;
+    }
+    const { error } = await supabase.from("posts").insert({ channel_id: user.id, content: content.trim(), image_url: imageUrl });
+    setPosting(false);
+    if (error) {
+      toast.error(`No se pudo publicar: ${error.message}`);
+    } else {
+      toast.success("¡Publicado!");
+      setContent("");
+      setImage(null);
+      load();
+    }
+  };
+
+  const profileName = profile?.channel_name || profile?.display_name || profile?.username || "Tú";
+  const profileInitials = (profileName.split(" ").filter(Boolean).map(s => s[0]).join("") || "T").slice(0, 2).toUpperCase();
+
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto animate-slide-up">
