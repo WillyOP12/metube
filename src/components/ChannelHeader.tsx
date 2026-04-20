@@ -117,16 +117,24 @@ export const ChannelHeader = ({ profile, videosCount, count, subscribed, isOwner
             <>
               <Button
                 onClick={onToggle}
-                variant={subscribed ? "outline" : "default"}
-                className="gap-2"
-                style={!subscribed && accent ? { backgroundColor: accent, color: "white", borderColor: accent } : undefined}
+                variant={subscribed ? "secondary" : "default"}
+                className="gap-2 font-medium"
+                style={
+                  !subscribed && accent
+                    ? { backgroundColor: accent, color: "hsl(var(--primary-foreground))", borderColor: accent }
+                    : undefined
+                }
               >
-                {subscribed ? <><BellRing className="h-4 w-4" />Suscrito</> : <><BellPlus className="h-4 w-4" />Suscribirse</>}
+                {subscribed ? (
+                  <><BellRing className="h-4 w-4" />Suscrito</>
+                ) : (
+                  <><BellPlus className="h-4 w-4" />Suscribirse</>
+                )}
               </Button>
               <ReportDialog targetType="channel" targetId={profile.id} variant="outline" />
             </>
           ) : (
-            <Button asChild><Link to="/auth">Suscribirse</Link></Button>
+            <Button asChild className="gap-2"><Link to="/auth"><BellPlus className="h-4 w-4" />Suscribirse</Link></Button>
           )}
         </div>
       </div>
