@@ -1,4 +1,5 @@
-import { isYouTube, youtubeEmbed, isVimeo, vimeoEmbed } from "@/lib/format";
+import { isYouTube, youtubeEmbed, isVimeo, vimeoEmbed, isDirectVideoUrl } from "@/lib/format";
+import { ExternalLink } from "lucide-react";
 
 interface Props {
   url: string;
@@ -22,9 +23,30 @@ export const VideoPlayer = ({ url, source, poster, vertical }: Props) => {
             src={embed}
             title="Reproductor"
             className="h-full w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
             allowFullScreen
           />
+        </div>
+      );
+    }
+
+    // URL externa que no es YouTube/Vimeo: si parece un archivo de vídeo, reproducirlo; si no, mostrar fallback con enlace
+    if (!isDirectVideoUrl(url)) {
+      return (
+        <div className={`w-full ${aspect} rounded-xl overflow-hidden border border-border bg-black flex flex-col items-center justify-center text-center p-6 gap-3`}>
+          <p className="text-sm text-muted-foreground max-w-md">
+            Este vídeo está alojado en un sitio externo que no se puede embeber. Ábrelo en una nueva pestaña.
+          </p>
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
+          >
+            <ExternalLink className="h-4 w-4" />Abrir vídeo
+          </a>
         </div>
       );
     }
@@ -38,6 +60,8 @@ export const VideoPlayer = ({ url, source, poster, vertical }: Props) => {
         poster={poster ?? undefined}
         controls
         playsInline
+        preload="metadata"
+        crossOrigin={source === "external" ? "anonymous" : undefined}
         className="h-full w-full object-contain bg-black"
       />
     </div>
