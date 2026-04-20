@@ -224,7 +224,7 @@ const Community = () => {
           <div className="space-y-4">
             {posts.map(post => {
               const name = post.channel?.channel_name || post.channel?.display_name || post.channel?.username || "Canal";
-              const initials = name.split(" ").map(s => s[0]).join("").slice(0, 2).toUpperCase();
+              const initials = (name.split(" ").filter(Boolean).map(s => s[0]).join("") || "C").slice(0, 2).toUpperCase();
               return (
                 <Card key={post.id} className="glass-card p-4">
                   <div className="flex gap-3">
