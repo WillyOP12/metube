@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { ListVideo, Plus, Globe, Lock, Trash2, Play } from "lucide-react";
+import { ListVideo, Plus, Globe, Lock, Trash2, Play, BellRing } from "lucide-react";
 import { usePlaylists } from "@/hooks/usePlaylists";
+import { useSubscribedPlaylists } from "@/hooks/usePlaylistSubscription";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -17,6 +18,7 @@ import {
 
 const PlaylistsInner = () => {
   const { playlists, loading, create, remove } = usePlaylists();
+  const { playlists: subscribedPlaylists, loading: subLoading } = useSubscribedPlaylists();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [isPublic, setIsPublic] = useState(true);
