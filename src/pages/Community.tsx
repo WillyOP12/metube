@@ -4,9 +4,11 @@ import { AppLayout } from "@/components/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Heart, ImagePlus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { ReportDialog } from "@/components/ReportDialog";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -31,9 +33,13 @@ interface FeedPost {
 
 const Community = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [scope, setScope] = useState<"subs" | "all">("subs");
+  const [content, setContent] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [posting, setPosting] = useState(false);
 
   useEffect(() => {
     document.title = "Comunidad — MeTube";
@@ -113,6 +119,34 @@ const Community = () => {
     setPosts(prev => prev.map(p => p.id === post.id ? { ...p, liked: !p.liked, likes: p.likes + (p.liked ? -1 : 1) } : p));
   };
 
+  const submitPost = async () => {
+    if (!user) { toast.error("Inicia sesión para publicar"); return; }
+    if (!content.trim()) { toast.error("Escribe algo antes de publicar"); return; }
+    setPosting(true);
+    let imageUrl: string | null = null;
+    if (image) {
+      if (image.size > 5 * 1024 * 1024) { toast.error("La imagen no puede superar 5MB"); setPosting(false); return; }
+      const ext = (image.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${user.id}/post-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("post-images").upload(path, image, { contentType: image.type, cacheControl: "3600", upsert: false });
+      if (upErr) { toast.error(`Error subiendo imagen: ${upErr.message}`); setPosting(false); return; }
+      imageUrl = supabase.storage.from("post-images").getPublicUrl(path).data.publicUrl;
+    }
+    const { error } = await supabase.from("posts").insert({ channel_id: user.id, content: content.trim(), image_url: imageUrl });
+    setPosting(false);
+    if (error) {
+      toast.error(`No se pudo publicar: ${error.message}`);
+    } else {
+      toast.success("¡Publicado!");
+      setContent("");
+      setImage(null);
+      load();
+    }
+  };
+
+  const profileName = profile?.channel_name || profile?.display_name || profile?.username || "Tú";
+  const profileInitials = (profileName.split(" ").filter(Boolean).map(s => s[0]).join("") || "T").slice(0, 2).toUpperCase();
+
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto animate-slide-up">
@@ -137,6 +171,45 @@ const Community = () => {
           </div>
         </div>
 
+        {user && (
+          <Card className="glass-card p-4 mb-6">
+            <div className="flex gap-3">
+              <Avatar className="h-10 w-10 border border-border">
+                <AvatarImage src={profile?.avatar_url ?? undefined} />
+                <AvatarFallback className="bg-surface-2 text-xs">{profileInitials}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 space-y-3">
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value.slice(0, 500))}
+                  placeholder="Comparte algo con tu comunidad..."
+                  className="bg-surface-1 min-h-20 resize-none"
+                />
+                {image && (
+                  <div className="relative inline-block">
+                    <img src={URL.createObjectURL(image)} alt="" className="max-h-40 rounded-lg" />
+                    <button onClick={() => setImage(null)} className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/90 flex items-center justify-center">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <label className="cursor-pointer text-muted-foreground hover:text-foreground transition">
+                    <ImagePlus className="h-5 w-5" />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground">{content.length}/500</span>
+                    <Button onClick={submitPost} disabled={posting || !content.trim()} size="sm">
+                      {posting ? "Publicando..." : "Publicar"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="h-7 w-7 rounded-full border-2 border-foreground/20 border-t-foreground animate-spin" />
@@ -151,7 +224,7 @@ const Community = () => {
           <div className="space-y-4">
             {posts.map(post => {
               const name = post.channel?.channel_name || post.channel?.display_name || post.channel?.username || "Canal";
-              const initials = name.split(" ").map(s => s[0]).join("").slice(0, 2).toUpperCase();
+              const initials = (name.split(" ").filter(Boolean).map(s => s[0]).join("") || "C").slice(0, 2).toUpperCase();
               return (
                 <Card key={post.id} className="glass-card p-4">
                   <div className="flex gap-3">

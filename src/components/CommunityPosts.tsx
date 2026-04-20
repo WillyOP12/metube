@@ -64,21 +64,29 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
   useEffect(() => { load(); }, [load]);
 
   const submit = async () => {
-    if (!user || !content.trim()) return;
+    if (!user) { toast.error("Inicia sesión para publicar"); return; }
+    if (!content.trim()) { toast.error("Escribe algo antes de publicar"); return; }
+    if (user.id !== channelId) { toast.error("Solo puedes publicar en tu propio canal"); return; }
     setPosting(true);
     let imageUrl: string | null = null;
     if (image) {
-      if (image.size > 5 * 1024 * 1024) { toast.error("Imagen máx 5MB"); setPosting(false); return; }
+      if (image.size > 5 * 1024 * 1024) { toast.error("La imagen no puede superar 5MB"); setPosting(false); return; }
       const ext = (image.name.split(".").pop() || "jpg").toLowerCase();
       const path = `${user.id}/post-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("post-images").upload(path, image, { contentType: image.type, cacheControl: "3600" });
-      if (error) { toast.error("Error subiendo imagen"); setPosting(false); return; }
+      const { error: upErr } = await supabase.storage.from("post-images").upload(path, image, { contentType: image.type, cacheControl: "3600", upsert: false });
+      if (upErr) { toast.error(`Error subiendo imagen: ${upErr.message}`); setPosting(false); return; }
       imageUrl = supabase.storage.from("post-images").getPublicUrl(path).data.publicUrl;
     }
     const { error } = await supabase.from("posts").insert({ channel_id: user.id, content: content.trim(), image_url: imageUrl });
     setPosting(false);
-    if (error) toast.error("No se pudo publicar");
-    else { toast.success("Publicado"); setContent(""); setImage(null); load(); }
+    if (error) {
+      toast.error(`No se pudo publicar: ${error.message}`);
+    } else {
+      toast.success("¡Publicado!");
+      setContent("");
+      setImage(null);
+      load();
+    }
   };
 
   const toggleLike = async (post: Post) => {
@@ -98,7 +106,7 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
   };
 
   const name = channel.channel_name || channel.display_name || channel.username || "Canal";
-  const initials = name.split(" ").map(s => s[0]).join("").slice(0, 2).toUpperCase();
+  const initials = (name.split(" ").filter(Boolean).map(s => s[0]).join("") || "C").slice(0, 2).toUpperCase();
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
