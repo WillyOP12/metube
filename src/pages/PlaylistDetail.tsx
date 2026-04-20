@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ListVideo, Play, Trash2, Globe, Lock } from "lucide-react";
+import { ListVideo, Play, Trash2, Globe, Lock, BellPlus, BellRing } from "lucide-react";
 import { formatViews } from "@/lib/format";
 import { toast } from "sonner";
+import { usePlaylistSubscription } from "@/hooks/usePlaylistSubscription";
 
 interface PlaylistData {
   id: string;
@@ -69,6 +70,7 @@ const PlaylistDetail = () => {
 
   const isOwner = user?.id === pl.owner_id;
   const firstId = items[0]?.videos?.id;
+  const { subscribed, count: subCount, toggle: toggleSub } = usePlaylistSubscription(pl.id);
 
   return (
     <AppLayout>
@@ -88,9 +90,15 @@ const PlaylistDetail = () => {
               {pl.description && <p className="text-sm text-muted-foreground">{pl.description}</p>}
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 {pl.is_public ? <><Globe className="h-3 w-3" />Pública</> : <><Lock className="h-3 w-3" />Privada</>} · {items.length} vídeos
+                {pl.is_public && <> · {subCount} suscriptores</>}
               </p>
               {firstId && (
                 <Button asChild className="w-full gap-2"><Link to={`/watch/${firstId}`}><Play className="h-4 w-4" />Reproducir todo</Link></Button>
+              )}
+              {!isOwner && pl.is_public && (
+                <Button onClick={toggleSub} variant={subscribed ? "secondary" : "outline"} className="w-full gap-2">
+                  {subscribed ? <><BellRing className="h-4 w-4" />Suscrito a la lista</> : <><BellPlus className="h-4 w-4" />Suscribirse a la lista</>}
+                </Button>
               )}
             </div>
           </Card>
