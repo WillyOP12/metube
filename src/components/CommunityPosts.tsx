@@ -106,7 +106,7 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
   };
 
   const name = channel.channel_name || channel.display_name || channel.username || "Canal";
-  const initials = name.split(" ").map(s => s[0]).join("").slice(0, 2).toUpperCase();
+  const initials = (name.split(" ").filter(Boolean).map(s => s[0]).join("") || "C").slice(0, 2).toUpperCase();
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
