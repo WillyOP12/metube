@@ -31,7 +31,7 @@ export const ShortsRow = ({ shorts, loading }: Props) => {
       {shorts.map((s) => (
         <Link
           key={s.id}
-          to={`/watch/${s.id}`}
+          to={`/shorts/${s.id}`}
           className="group shrink-0 w-40 sm:w-48 relative aspect-[9/16] rounded-xl overflow-hidden bg-surface-2 border border-border hover-lift"
         >
           {s.thumbnail_url ? (

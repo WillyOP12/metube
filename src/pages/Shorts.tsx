@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { useVideos } from "@/hooks/useVideos";
 import { useLikes } from "@/hooks/useLikes";
@@ -99,11 +99,22 @@ const ShortItem = ({ video, active }: { video: VideoWithChannel; active: boolean
 };
 
 const Shorts = () => {
+  const { id } = useParams<{ id: string }>();
   const { videos, loading } = useVideos({ isShort: true, limit: 30 });
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => { document.title = "Shorts — MeTube"; }, []);
+
+  // Si llega con /shorts/:id, scrollear al short específico
+  useEffect(() => {
+    if (!id || !videos.length || !containerRef.current) return;
+    const idx = videos.findIndex(v => v.id === id);
+    if (idx < 0) return;
+    const sections = containerRef.current.querySelectorAll<HTMLElement>("section");
+    sections[idx]?.scrollIntoView({ behavior: "instant" as ScrollBehavior, block: "start" });
+    setActiveIdx(idx);
+  }, [id, videos]);
 
   useEffect(() => {
     const root = containerRef.current;

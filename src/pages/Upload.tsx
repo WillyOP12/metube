@@ -15,6 +15,8 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Upload as UploadIcon, Link2, Image as ImageIcon, Film } from "lucide-react";
 import { toast } from "sonner";
+import { generateThumbnailFromVideo, youtubeThumbnail } from "@/lib/thumbnail";
+import { isYouTube } from "@/lib/format";
 
 const Inner = () => {
   const { user } = useAuth();
@@ -109,6 +111,15 @@ const Inner = () => {
 
       if (thumbFile) {
         thumbnail_url = await uploadToBucket("thumbnails", thumbFile);
+      } else if (tab === "upload" && videoFile) {
+        // Auto-generar miniatura de un frame aleatorio
+        try {
+          const auto = await generateThumbnailFromVideo(videoFile);
+          if (auto) thumbnail_url = await uploadToBucket("thumbnails", auto);
+        } catch { /* fallback: sin miniatura */ }
+      } else if (tab === "external" && isYouTube(externalUrl)) {
+        // Para YouTube usamos su miniatura oficial
+        thumbnail_url = youtubeThumbnail(externalUrl);
       }
       setProgress(85);
 

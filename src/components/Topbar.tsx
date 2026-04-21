@@ -1,4 +1,4 @@
-import { Search, LogIn, LogOut, User as UserIcon, Settings as SettingsIcon, UserPlus, Check, X } from "lucide-react";
+import { Search, LogIn, LogOut, User as UserIcon, Settings as SettingsIcon, UserPlus, Check, X, Tv } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
@@ -81,6 +81,7 @@ export const Topbar = () => {
                 <div className="text-xs text-muted-foreground truncate">@{profile?.username}</div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild><Link to={`/c/${user.id}`}><Tv className="mr-2 h-4 w-4" />Ir a mi canal</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link to="/profile"><UserIcon className="mr-2 h-4 w-4" />Mi perfil</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link to="/settings"><SettingsIcon className="mr-2 h-4 w-4" />Ajustes</Link></DropdownMenuItem>
 
