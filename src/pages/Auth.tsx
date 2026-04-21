@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,12 +12,15 @@ import { toast } from "sonner";
 
 const Auth = () => {
   const { user, loading } = useAuth();
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const adding = params.get("add") === "1";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (!loading && user) return <Navigate to="/" replace />;
+  if (!loading && user && !adding) return <Navigate to="/" replace />;
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +28,8 @@ const Auth = () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("¡Bienvenido de vuelta!");
+    toast.success("¡Bienvenido!");
+    navigate("/", { replace: true });
   };
 
   const signUp = async (e: React.FormEvent) => {
@@ -42,6 +46,7 @@ const Auth = () => {
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Cuenta creada. ¡Bienvenido a MeTube!");
+    navigate("/", { replace: true });
   };
 
   return (

@@ -107,13 +107,7 @@ export const ChannelHeader = ({ profile, videosCount, count, subscribed, isOwner
           )}
         </div>
         <div className="flex gap-2 flex-wrap">
-          {isOwner ? (
-            <>
-              <Button asChild variant="outline" className="gap-2">
-                <Link to="/studio"><Pencil className="h-4 w-4" />Editar canal</Link>
-              </Button>
-            </>
-          ) : user ? (
+          {isOwner ? null : user ? (
             <>
               <Button
                 onClick={onToggle}

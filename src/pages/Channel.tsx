@@ -96,7 +96,7 @@ const Channel = () => {
           onToggle={toggle}
         />
 
-        <Tabs defaultValue="videos" className="mt-8">
+        <Tabs defaultValue={isOwner && profile.is_channel ? "community" : "videos"} className="mt-8">
           <TabsList className="bg-surface-1 border border-border">
             <TabsTrigger value="videos">Vídeos</TabsTrigger>
             {showPlaylists && <TabsTrigger value="playlists">Listas</TabsTrigger>}

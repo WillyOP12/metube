@@ -1,5 +1,4 @@
-import { isYouTube, youtubeEmbed, isVimeo, vimeoEmbed, isDirectVideoUrl } from "@/lib/format";
-import { ExternalLink } from "lucide-react";
+import { isYouTube, youtubeEmbed, isVimeo, vimeoEmbed } from "@/lib/format";
 
 interface Props {
   url: string;
@@ -32,24 +31,8 @@ export const VideoPlayer = ({ url, source, poster, vertical }: Props) => {
       );
     }
 
-    // URL externa que no es YouTube/Vimeo: si parece un archivo de vídeo, reproducirlo; si no, mostrar fallback con enlace
-    if (!isDirectVideoUrl(url)) {
-      return (
-        <div className={`w-full ${aspect} rounded-xl overflow-hidden border border-border bg-black flex flex-col items-center justify-center text-center p-6 gap-3`}>
-          <p className="text-sm text-muted-foreground max-w-md">
-            Este vídeo está alojado en un sitio externo que no se puede embeber. Ábrelo en una nueva pestaña.
-          </p>
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
-          >
-            <ExternalLink className="h-4 w-4" />Abrir vídeo
-          </a>
-        </div>
-      );
-    }
+    // Cualquier otra URL externa: la intentamos reproducir como archivo de vídeo nativo.
+    // El navegador detectará si la URL realmente es un stream/archivo reproducible.
   }
 
   return (

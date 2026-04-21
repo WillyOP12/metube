@@ -40,10 +40,10 @@ const SettingsInner = () => {
     if (!parsed.success) return toast.error(parsed.error.errors[0].message);
     if (parsed.data === user?.email) return toast.info("Ese ya es tu email actual");
     setSavingEmail(true);
-    const { error } = await supabase.auth.updateUser({ email: parsed.data });
+    const { data, error } = await supabase.functions.invoke("admin-update-email", { body: { email: parsed.data } });
     setSavingEmail(false);
-    if (error) return toast.error("No se pudo actualizar el email");
-    toast.success("Te hemos enviado un correo de confirmación.");
+    if (error || (data as any)?.error) return toast.error((data as any)?.error || "No se pudo actualizar el email");
+    toast.success("Email actualizado");
   };
 
   const updatePassword = async () => {
