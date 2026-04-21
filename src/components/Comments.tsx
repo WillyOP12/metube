@@ -35,13 +35,20 @@ export const Comments = ({ videoId }: { videoId: string }) => {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data: rows, error } = await supabase
       .from("comments")
-      .select("id, user_id, content, created_at, author:profiles!comments_user_id_fkey(id, display_name, username, avatar_url)")
+      .select("id, user_id, content, created_at")
       .eq("video_id", videoId)
       .is("parent_id", null)
       .order("created_at", { ascending: false });
-    setComments((data as unknown as CommentRow[]) ?? []);
+    if (error || !rows) { setComments([]); setLoading(false); return; }
+    const ids = Array.from(new Set(rows.map(r => r.user_id)));
+    const { data: profs } = ids.length
+      ? await supabase.from("profiles").select("id, display_name, username, avatar_url").in("id", ids)
+      : { data: [] as any[] };
+    const map = new Map<string, CommentRow["author"]>();
+    (profs ?? []).forEach((p: any) => map.set(p.id, p));
+    setComments(rows.map(r => ({ ...r, author: map.get(r.user_id) ?? null })));
     setLoading(false);
   }, [videoId]);
 
