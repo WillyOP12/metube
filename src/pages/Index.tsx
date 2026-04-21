@@ -2,14 +2,16 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Play, Upload, Users } from "lucide-react";
+import { Play, Upload, Users, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useVideos } from "@/hooks/useVideos";
 import { VideoGrid } from "@/components/VideoGrid";
+import { ShortsRow } from "@/components/ShortsRow";
 
 const Index = () => {
   const { user } = useAuth();
-  const { videos, loading } = useVideos({ limit: 12 });
+  const { videos, loading } = useVideos({ isShort: false, limit: 12 });
+  const { videos: shorts, loading: loadingShorts } = useVideos({ isShort: true, limit: 12 });
 
   useEffect(() => {
     document.title = "MeTube — vídeos, shorts y comunidad";
@@ -48,10 +50,21 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Shorts row */}
+      <section className="mb-10">
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="font-display text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <Sparkles className="h-5 w-5" /> Shorts
+          </h2>
+          <Link to="/shorts" className="text-sm text-muted-foreground hover:text-foreground transition">Ver todo →</Link>
+        </div>
+        <ShortsRow shorts={shorts} loading={loadingShorts} />
+      </section>
+
       {/* Recent videos */}
       <section>
         <div className="flex items-baseline justify-between mb-5">
-          <h2 className="font-display text-2xl font-semibold tracking-tight">Recomendado</h2>
+          <h2 className="font-display text-2xl font-semibold tracking-tight">Vídeos recomendados</h2>
           <Link to="/explore" className="text-sm text-muted-foreground hover:text-foreground transition">Ver todo →</Link>
         </div>
         <VideoGrid
