@@ -132,9 +132,16 @@ const StudioInner = () => {
           <h1 className="font-display text-3xl font-bold">Studio</h1>
           <p className="text-muted-foreground text-sm">Personaliza el aspecto de tu canal con vista previa en directo.</p>
         </div>
-        <Button onClick={save} disabled={saving} size="lg">
-          {saving ? "Guardando..." : "Guardar cambios"}
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" className="gap-2">
+            <a href={`/c/${user?.id}`} target="_blank" rel="noopener noreferrer">
+              <Eye className="h-4 w-4" />Ver mi canal
+            </a>
+          </Button>
+          <Button onClick={save} disabled={saving} size="lg">
+            {saving ? "Guardando..." : "Guardar cambios"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -258,12 +265,12 @@ const StudioInner = () => {
             videosCount={0}
             count={profile.subscriber_count}
             subscribed={false}
-            isOwner
-            user={user}
+            isOwner={false}
+            user={null}
             onToggle={() => {}}
           />
           <Separator className="my-6 bg-border" />
-          <p className="text-xs text-muted-foreground">Los cambios se aplicarán al perfil público al guardar.</p>
+          <p className="text-xs text-muted-foreground">Así te ven los demás. Los cambios se aplican al guardar.</p>
         </div>
       </div>
     </div>
