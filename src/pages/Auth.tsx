@@ -43,9 +43,15 @@ const Auth = () => {
         data: { display_name: displayName || email.split("@")[0] },
       },
     });
+    if (error) { setBusy(false); return toast.error(error.message); }
+    // Auto-login: con email auto-confirmado, intentamos iniciar sesión inmediatamente
+    const { error: siErr } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Cuenta creada. ¡Bienvenido a MeTube!");
+    if (siErr) {
+      toast.success("Cuenta creada. Inicia sesión.");
+      return;
+    }
+    toast.success("¡Bienvenido a MeTube!");
     navigate("/", { replace: true });
   };
 
