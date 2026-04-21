@@ -1,5 +1,4 @@
-import { isYouTube, youtubeEmbed, isVimeo, vimeoEmbed, isDirectVideoUrl } from "@/lib/format";
-import { ExternalLink } from "lucide-react";
+import { isYouTube, youtubeEmbed, isVimeo, vimeoEmbed } from "@/lib/format";
 
 interface Props {
   url: string;
