@@ -292,6 +292,7 @@ export type Database = {
           hashtags: string[]
           id: string
           image_url: string | null
+          links: Json
           updated_at: string
         }
         Insert: {
@@ -301,6 +302,7 @@ export type Database = {
           hashtags?: string[]
           id?: string
           image_url?: string | null
+          links?: Json
           updated_at?: string
         }
         Update: {
@@ -310,6 +312,7 @@ export type Database = {
           hashtags?: string[]
           id?: string
           image_url?: string | null
+          links?: Json
           updated_at?: string
         }
         Relationships: [
@@ -334,6 +337,7 @@ export type Database = {
           id: string
           is_channel: boolean
           language: string | null
+          links: Json
           location: string | null
           social_links: Json
           subscriber_count: number
@@ -354,6 +358,7 @@ export type Database = {
           id: string
           is_channel?: boolean
           language?: string | null
+          links?: Json
           location?: string | null
           social_links?: Json
           subscriber_count?: number
@@ -374,6 +379,7 @@ export type Database = {
           id?: string
           is_channel?: boolean
           language?: string | null
+          links?: Json
           location?: string | null
           social_links?: Json
           subscriber_count?: number
@@ -486,6 +492,7 @@ export type Database = {
           hashtags: string[]
           id: string
           is_short: boolean
+          links: Json
           source: Database["public"]["Enums"]["video_source"]
           thumbnail_url: string | null
           title: string
@@ -501,6 +508,7 @@ export type Database = {
           hashtags?: string[]
           id?: string
           is_short?: boolean
+          links?: Json
           source?: Database["public"]["Enums"]["video_source"]
           thumbnail_url?: string | null
           title: string
@@ -516,6 +524,7 @@ export type Database = {
           hashtags?: string[]
           id?: string
           is_short?: boolean
+          links?: Json
           source?: Database["public"]["Enums"]["video_source"]
           thumbnail_url?: string | null
           title?: string
