@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { parseLinks, type RichLink } from "@/lib/links";
 
 export interface SocialLinks {
   twitter?: string;
@@ -25,7 +26,15 @@ export interface Profile {
   accent_color: string | null;
   location: string | null;
   language: string | null;
+  links: RichLink[];
+  suspended_until: string | null;
+  suspension_reason: string | null;
 }
+
+const hydrate = (raw: any): Profile | null => {
+  if (!raw) return null;
+  return { ...raw, links: parseLinks(raw.links) } as Profile;
+};
 
 export const useProfile = () => {
   const { user } = useAuth();
@@ -33,18 +42,10 @@ export const useProfile = () => {
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
-    if (!user) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
+    if (!user) { setProfile(null); setLoading(false); return; }
     setLoading(true);
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-    setProfile(data as Profile | null);
+    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    setProfile(hydrate(data));
     setLoading(false);
   };
 

@@ -4,8 +4,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { ReportDialog } from "./ReportDialog";
+import { MentionTextarea } from "./MentionTextarea";
+import { RichText } from "./RichText";
+import { recordMentions } from "@/lib/mentions";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -58,14 +60,16 @@ export const Comments = ({ videoId }: { videoId: string }) => {
     if (!user) { toast.error("Inicia sesión para comentar"); return; }
     if (!text.trim()) return;
     setSubmitting(true);
-    const { error } = await supabase.from("comments").insert({
-      video_id: videoId,
-      user_id: user.id,
-      content: text.trim(),
-    });
+    const { data, error } = await supabase.from("comments").insert({
+      video_id: videoId, user_id: user.id, content: text.trim(),
+    }).select("id").single();
     setSubmitting(false);
-    if (error) toast.error("No se pudo publicar");
-    else { setText(""); load(); }
+    if (error || !data) {
+      toast.error(error?.message || "No se pudo publicar");
+    } else {
+      await recordMentions({ text, sourceType: "comment", sourceId: videoId, sourceUserId: user.id });
+      setText(""); load();
+    }
   };
 
   const remove = async (id: string) => {
@@ -89,10 +93,10 @@ export const Comments = ({ videoId }: { videoId: string }) => {
             <AvatarFallback className="bg-surface-2 text-xs">{initials(profile?.display_name)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-2">
-            <Textarea
+            <MentionTextarea
               value={text}
-              onChange={(e) => setText(e.target.value.slice(0, 1000))}
-              placeholder="Añade un comentario..."
+              onChange={(v) => setText(v.slice(0, 1000))}
+              placeholder="Añade un comentario… puedes mencionar @usuarios y usar #hashtags."
               className="bg-surface-1 border-border min-h-20"
             />
             <div className="flex justify-end gap-2">
@@ -121,12 +125,12 @@ export const Comments = ({ videoId }: { videoId: string }) => {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="font-medium">{name}</span>
+                    <Link to={`/c/${c.user_id}`} className="font-medium hover:underline">{name}</Link>
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: es })}
                     </span>
                   </div>
-                  <p className="text-sm mt-1 whitespace-pre-wrap break-words">{c.content}</p>
+                  <RichText text={c.content} className="text-sm mt-1" />
                   <div className="flex items-center gap-1 mt-1">
                     <ReportDialog targetType="comment" targetId={c.id} triggerLabel="Reportar" size="sm" variant="ghost" />
                     {user?.id === c.user_id && (

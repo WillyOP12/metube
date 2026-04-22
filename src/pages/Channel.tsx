@@ -12,6 +12,7 @@ import { useVideos } from "@/hooks/useVideos";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import type { Profile } from "@/hooks/useProfile";
+import { parseLinks } from "@/lib/links";
 
 interface PublicPlaylist {
   id: string;
@@ -40,7 +41,7 @@ const Channel = () => {
         supabase.from("posts").select("id", { count: "exact", head: true }).eq("channel_id", id),
         supabase.from("playlists").select("id, title, description").eq("owner_id", id).eq("is_public", true).order("created_at", { ascending: false }),
       ]);
-      setProfile(data as Profile | null);
+      setProfile(data ? ({ ...(data as any), links: parseLinks((data as any).links) } as Profile) : null);
       setPostCount(pc ?? 0);
 
       const plIds = (pls ?? []).map(p => p.id);
