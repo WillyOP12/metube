@@ -91,33 +91,6 @@ export type Database = {
           },
         ]
       }
-      mentions: {
-        Row: {
-          created_at: string
-          id: string
-          mentioned_user_id: string
-          source_id: string
-          source_type: string
-          source_user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          mentioned_user_id: string
-          source_id: string
-          source_type: string
-          source_user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          mentioned_user_id?: string
-          source_id?: string
-          source_type?: string
-          source_user_id?: string
-        }
-        Relationships: []
-      }
       notifications: {
         Row: {
           actor_id: string | null
@@ -220,41 +193,6 @@ export type Database = {
         }
         Relationships: []
       }
-      post_comments: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          post_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          post_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          post_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "post_comments_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "posts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       post_likes: {
         Row: {
           created_at: string
@@ -289,7 +227,6 @@ export type Database = {
           channel_id: string
           content: string
           created_at: string
-          hashtags: string[]
           id: string
           image_url: string | null
           updated_at: string
@@ -298,7 +235,6 @@ export type Database = {
           channel_id: string
           content: string
           created_at?: string
-          hashtags?: string[]
           id?: string
           image_url?: string | null
           updated_at?: string
@@ -307,7 +243,6 @@ export type Database = {
           channel_id?: string
           content?: string
           created_at?: string
-          hashtags?: string[]
           id?: string
           image_url?: string | null
           updated_at?: string
@@ -337,9 +272,6 @@ export type Database = {
           location: string | null
           social_links: Json
           subscriber_count: number
-          suspended_by: string | null
-          suspended_until: string | null
-          suspension_reason: string | null
           updated_at: string
           username: string | null
         }
@@ -357,9 +289,6 @@ export type Database = {
           location?: string | null
           social_links?: Json
           subscriber_count?: number
-          suspended_by?: string | null
-          suspended_until?: string | null
-          suspension_reason?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -377,9 +306,6 @@ export type Database = {
           location?: string | null
           social_links?: Json
           subscriber_count?: number
-          suspended_by?: string | null
-          suspended_until?: string | null
-          suspension_reason?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -483,7 +409,6 @@ export type Database = {
           created_at: string
           description: string | null
           duration: number | null
-          hashtags: string[]
           id: string
           is_short: boolean
           source: Database["public"]["Enums"]["video_source"]
@@ -498,7 +423,6 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number | null
-          hashtags?: string[]
           id?: string
           is_short?: boolean
           source?: Database["public"]["Enums"]["video_source"]
@@ -513,7 +437,6 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number | null
-          hashtags?: string[]
           id?: string
           is_short?: boolean
           source?: Database["public"]["Enums"]["video_source"]
@@ -589,7 +512,6 @@ export type Database = {
         Returns: boolean
       }
       increment_video_view: { Args: { _video_id: string }; Returns: undefined }
-      is_suspended: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
@@ -601,9 +523,6 @@ export type Database = {
         | "new_subscriber"
         | "new_reply"
         | "report_resolved"
-        | "mention"
-        | "new_post_comment"
-        | "account_suspended"
       report_status: "pending" | "reviewing" | "resolved" | "dismissed"
       report_target: "video" | "comment" | "post" | "channel"
       video_source: "upload" | "external"
@@ -743,9 +662,6 @@ export const Constants = {
         "new_subscriber",
         "new_reply",
         "report_resolved",
-        "mention",
-        "new_post_comment",
-        "account_suspended",
       ],
       report_status: ["pending", "reviewing", "resolved", "dismissed"],
       report_target: ["video", "comment", "post", "channel"],
