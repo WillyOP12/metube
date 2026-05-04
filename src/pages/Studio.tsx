@@ -104,6 +104,7 @@ const StudioInner = () => {
       bio: bio.trim() || null,
       channel_name: channelName.trim() || null,
       social_links: cleanSocial as any,
+      links: richLinks as any,
     }).eq("id", user.id);
     setSaving(false);
     if (error) return toast.error("No se pudo guardar");
