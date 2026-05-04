@@ -223,7 +223,7 @@ const UsersTab = ({ currentUserId }: { currentUserId: string | undefined }) => {
     setLoading(true);
     let q = supabase
       .from("profiles")
-      .select("id, display_name, username, avatar_url, created_at, is_channel")
+      .select("id, display_name, username, avatar_url, created_at, is_channel, suspended_until")
       .order("created_at", { ascending: false })
       .limit(50);
     if (search.trim()) q = q.or(`display_name.ilike.%${search}%,username.ilike.%${search}%`);
