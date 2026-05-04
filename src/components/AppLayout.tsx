@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Topbar } from "./Topbar";
+import { SuspensionBanner } from "./SuspensionBanner";
 
 export const AppLayout = ({ children }: { children: ReactNode }) => {
   return (
