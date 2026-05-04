@@ -316,13 +316,28 @@ const UsersTab = ({ currentUserId }: { currentUserId: string | undefined }) => {
                 <div className="flex gap-1 flex-wrap">
                   {isAdmin && <Badge>admin</Badge>}
                   {isMod && <Badge variant="outline">mod</Badge>}
+                  {u.suspended_until && new Date(u.suspended_until) > new Date() && (
+                    <Badge variant="destructive">suspendido</Badge>
+                  )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button size="sm" variant={isMod ? "outline" : "secondary"} onClick={() => toggleRole(u.id, "moderator", isMod)}>
                     {isMod ? "Quitar mod" : "Hacer mod"}
                   </Button>
                   <Button size="sm" variant={isAdmin ? "outline" : "default"} onClick={() => toggleRole(u.id, "admin", isAdmin)}>
                     {isAdmin ? "Quitar admin" : "Hacer admin"}
+                  </Button>
+                  {u.suspended_until && new Date(u.suspended_until) > new Date() ? (
+                    <Button size="sm" variant="outline" onClick={() => unsuspend(u.id)}>Reactivar</Button>
+                  ) : (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => suspend(u.id, 1)}>Susp. 1d</Button>
+                      <Button size="sm" variant="outline" onClick={() => suspend(u.id, 7)}>7d</Button>
+                      <Button size="sm" variant="outline" onClick={() => suspend(u.id, 30)}>30d</Button>
+                    </>
+                  )}
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteAccount(u.id)}>
+                    Borrar cuenta
                   </Button>
                 </div>
               </Card>
