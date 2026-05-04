@@ -14,6 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadToBucket } from "@/lib/upload";
 import { toast } from "sonner";
 import { ImagePlus, Tv, Palette, MapPin, Globe, Twitter, Instagram, Youtube, Github, Link as LinkIcon, Eye } from "lucide-react";
+import { LinksEditor } from "@/components/LinksEditor";
+import { ImageCropper } from "@/components/ImageCropper";
+import type { RichLink } from "@/lib/links";
 
 const ACCENT_PRESETS = [
   "#ffffff", "#ff4d4d", "#ff7a00", "#ffd60a", "#34c759",
