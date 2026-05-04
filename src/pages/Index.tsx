@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Play, Upload, Users, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useVideos } from "@/hooks/useVideos";
+import { useFeed } from "@/hooks/useFeed";
 import { VideoGrid } from "@/components/VideoGrid";
 import { ShortsRow } from "@/components/ShortsRow";
 
 const Index = () => {
   const { user } = useAuth();
-  const { videos, loading } = useVideos({ isShort: false, limit: 12 });
+  const { videos, loading } = useFeed(24);
   const { videos: shorts, loading: loadingShorts } = useVideos({ isShort: true, limit: 12 });
 
   useEffect(() => {
