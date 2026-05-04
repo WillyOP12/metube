@@ -257,6 +257,37 @@ const UsersTab = ({ currentUserId }: { currentUserId: string | undefined }) => {
     load();
   };
 
+  const suspend = async (userId: string, days: number) => {
+    const until = new Date(Date.now() + days * 86400000).toISOString();
+    const reason = prompt(`Motivo de la suspensión (${days} días):`) || null;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ suspended_until: until, suspension_reason: reason, suspended_by: currentUserId })
+      .eq("id", userId);
+    if (error) return toast.error("No se pudo suspender");
+    toast.success(`Cuenta suspendida ${days} días (solo lectura)`);
+    load();
+  };
+
+  const unsuspend = async (userId: string) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ suspended_until: null, suspension_reason: null, suspended_by: null })
+      .eq("id", userId);
+    if (error) return toast.error("No se pudo levantar");
+    toast.success("Suspensión retirada");
+    load();
+  };
+
+  const deleteAccount = async (userId: string) => {
+    if (userId === currentUserId) return toast.error("No puedes borrarte a ti mismo");
+    if (!confirm("¿Borrar permanentemente esta cuenta?")) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", userId);
+    if (error) return toast.error("No se pudo borrar");
+    toast.success("Cuenta eliminada");
+    load();
+  };
+
   return (
     <div className="space-y-4">
       <form onSubmit={(e) => { e.preventDefault(); load(); }} className="relative max-w-md">
