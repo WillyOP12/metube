@@ -19,6 +19,9 @@ import { formatViews } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { VideoCard } from "@/components/VideoCard";
 import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
+import { RichText } from "@/components/RichText";
+import { LinksDisplay } from "@/components/LinksDisplay";
+import { parseLinks } from "@/lib/links";
 import { toast } from "sonner";
 
 const Watch = () => {
