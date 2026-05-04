@@ -267,6 +267,14 @@ const StudioInner = () => {
               ))}
             </div>
           </Card>
+
+          <Card className="glass-card p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <LinkIcon className="h-4 w-4" />
+              <h3 className="font-display font-semibold">Enlaces (bloque destacado)</h3>
+            </div>
+            <LinksEditor value={richLinks} onChange={setRichLinks} />
+          </Card>
         </div>
 
         {/* Live preview */}
