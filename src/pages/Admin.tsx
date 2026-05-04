@@ -31,6 +31,7 @@ interface Stats {
 interface UserRow {
   id: string; display_name: string | null; username: string | null;
   avatar_url: string | null; created_at: string; is_channel: boolean;
+  suspended_until: string | null;
   roles: ("admin" | "moderator" | "user")[];
 }
 
