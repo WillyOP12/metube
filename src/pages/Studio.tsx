@@ -14,6 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadToBucket } from "@/lib/upload";
 import { toast } from "sonner";
 import { ImagePlus, Tv, Palette, MapPin, Globe, Twitter, Instagram, Youtube, Github, Link as LinkIcon, Eye } from "lucide-react";
+import { LinksEditor } from "@/components/LinksEditor";
+import { ImageCropper } from "@/components/ImageCropper";
+import type { RichLink } from "@/lib/links";
 
 const ACCENT_PRESETS = [
   "#ffffff", "#ff4d4d", "#ff7a00", "#ffd60a", "#34c759",
@@ -31,6 +34,9 @@ const StudioInner = () => {
   const [bio, setBio] = useState("");
   const [channelName, setChannelName] = useState("");
   const [social, setSocial] = useState<SocialLinks>({});
+  const [richLinks, setRichLinks] = useState<RichLink[]>([]);
+  const [pendingBanner, setPendingBanner] = useState<File | null>(null);
+  const [bannerCropOpen, setBannerCropOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
@@ -44,16 +50,22 @@ const StudioInner = () => {
       setBio(profile.bio ?? "");
       setChannelName(profile.channel_name ?? "");
       setSocial(profile.social_links || {});
+      setRichLinks(profile.links || []);
     }
   }, [profile]);
 
   const updateSocial = (key: keyof SocialLinks, value: string) =>
     setSocial((prev) => ({ ...prev, [key]: value }));
 
-  const handleBanner = async (file: File) => {
-    if (!user) return;
+  const onBannerSelected = (file: File) => {
     if (file.size > 8 * 1024 * 1024) return toast.error("Máx 8MB");
     if (!file.type.startsWith("image/")) return toast.error("Solo imágenes");
+    setPendingBanner(file);
+    setBannerCropOpen(true);
+  };
+
+  const handleBanner = async (file: File) => {
+    if (!user) return;
     setUploadingBanner(true);
     try {
       const url = await uploadToBucket("banners", user.id, file, "banner");
@@ -92,6 +104,7 @@ const StudioInner = () => {
       bio: bio.trim() || null,
       channel_name: channelName.trim() || null,
       social_links: cleanSocial as any,
+      links: richLinks as any,
     }).eq("id", user.id);
     setSaving(false);
     if (error) return toast.error("No se pudo guardar");
@@ -123,6 +136,7 @@ const StudioInner = () => {
     bio: bio.trim() || null,
     channel_name: channelName.trim() || null,
     social_links: social,
+    links: richLinks,
   };
 
   return (
@@ -161,7 +175,7 @@ const StudioInner = () => {
                   <span className="cursor-pointer">{uploadingBanner ? "Subiendo..." : bannerUrl ? "Cambiar banner" : "Subir banner"}</span>
                 </Button>
                 <input type="file" accept="image/*" className="hidden" disabled={uploadingBanner}
-                  onChange={(e) => e.target.files?.[0] && handleBanner(e.target.files[0])} />
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) onBannerSelected(f); e.target.value = ""; }} />
               </label>
               {bannerUrl && (
                 <Button variant="ghost" onClick={removeBanner}>Quitar</Button>
@@ -253,6 +267,14 @@ const StudioInner = () => {
               ))}
             </div>
           </Card>
+
+          <Card className="glass-card p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <LinkIcon className="h-4 w-4" />
+              <h3 className="font-display font-semibold">Enlaces (bloque destacado)</h3>
+            </div>
+            <LinksEditor value={richLinks} onChange={setRichLinks} />
+          </Card>
         </div>
 
         {/* Live preview */}
@@ -273,6 +295,15 @@ const StudioInner = () => {
           <p className="text-xs text-muted-foreground">Así te ven los demás. Los cambios se aplican al guardar.</p>
         </div>
       </div>
+      <ImageCropper
+        file={pendingBanner}
+        aspect={1920 / 480}
+        outputMaxWidth={1920}
+        open={bannerCropOpen}
+        onOpenChange={setBannerCropOpen}
+        onConfirm={handleBanner}
+        title="Recortar banner"
+      />
     </div>
   );
 };

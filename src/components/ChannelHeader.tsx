@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { BellPlus, BellRing, Pencil, MapPin, Globe, Twitter, Instagram, Youtube, Github, Link as LinkIcon } from "lucide-react";
 import { ReportDialog } from "./ReportDialog";
+import { LinksDisplay } from "./LinksDisplay";
+import { RichText } from "./RichText";
 import type { Profile, SocialLinks } from "@/hooks/useProfile";
 
 interface Props {
@@ -72,7 +74,10 @@ export const ChannelHeader = ({ profile, videosCount, count, subscribed, isOwner
           <p className="text-sm text-muted-foreground mt-1">
             @{profile.username} · {count} suscriptores · {videosCount} vídeos
           </p>
-          {profile.bio && <p className="text-sm text-foreground/80 mt-3 max-w-2xl whitespace-pre-wrap">{profile.bio}</p>}
+          {profile.bio && <RichText text={profile.bio} className="text-sm text-foreground/80 mt-3 max-w-2xl" />}
+          {profile.links?.length > 0 && (
+            <div className="mt-3"><LinksDisplay links={profile.links} accent={accent} /></div>
+          )}
 
           {(profile.location || profile.language) && (
             <div className="flex gap-4 mt-3 text-xs text-muted-foreground">

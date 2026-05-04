@@ -31,6 +31,7 @@ interface Stats {
 interface UserRow {
   id: string; display_name: string | null; username: string | null;
   avatar_url: string | null; created_at: string; is_channel: boolean;
+  suspended_until: string | null;
   roles: ("admin" | "moderator" | "user")[];
 }
 
@@ -222,7 +223,7 @@ const UsersTab = ({ currentUserId }: { currentUserId: string | undefined }) => {
     setLoading(true);
     let q = supabase
       .from("profiles")
-      .select("id, display_name, username, avatar_url, created_at, is_channel")
+      .select("id, display_name, username, avatar_url, created_at, is_channel, suspended_until")
       .order("created_at", { ascending: false })
       .limit(50);
     if (search.trim()) q = q.or(`display_name.ilike.%${search}%,username.ilike.%${search}%`);
@@ -256,6 +257,37 @@ const UsersTab = ({ currentUserId }: { currentUserId: string | undefined }) => {
     load();
   };
 
+  const suspend = async (userId: string, days: number) => {
+    const until = new Date(Date.now() + days * 86400000).toISOString();
+    const reason = prompt(`Motivo de la suspensión (${days} días):`) || null;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ suspended_until: until, suspension_reason: reason, suspended_by: currentUserId })
+      .eq("id", userId);
+    if (error) return toast.error("No se pudo suspender");
+    toast.success(`Cuenta suspendida ${days} días (solo lectura)`);
+    load();
+  };
+
+  const unsuspend = async (userId: string) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ suspended_until: null, suspension_reason: null, suspended_by: null })
+      .eq("id", userId);
+    if (error) return toast.error("No se pudo levantar");
+    toast.success("Suspensión retirada");
+    load();
+  };
+
+  const deleteAccount = async (userId: string) => {
+    if (userId === currentUserId) return toast.error("No puedes borrarte a ti mismo");
+    if (!confirm("¿Borrar permanentemente esta cuenta?")) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", userId);
+    if (error) return toast.error("No se pudo borrar");
+    toast.success("Cuenta eliminada");
+    load();
+  };
+
   return (
     <div className="space-y-4">
       <form onSubmit={(e) => { e.preventDefault(); load(); }} className="relative max-w-md">
@@ -284,13 +316,28 @@ const UsersTab = ({ currentUserId }: { currentUserId: string | undefined }) => {
                 <div className="flex gap-1 flex-wrap">
                   {isAdmin && <Badge>admin</Badge>}
                   {isMod && <Badge variant="outline">mod</Badge>}
+                  {u.suspended_until && new Date(u.suspended_until) > new Date() && (
+                    <Badge variant="destructive">suspendido</Badge>
+                  )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button size="sm" variant={isMod ? "outline" : "secondary"} onClick={() => toggleRole(u.id, "moderator", isMod)}>
                     {isMod ? "Quitar mod" : "Hacer mod"}
                   </Button>
                   <Button size="sm" variant={isAdmin ? "outline" : "default"} onClick={() => toggleRole(u.id, "admin", isAdmin)}>
                     {isAdmin ? "Quitar admin" : "Hacer admin"}
+                  </Button>
+                  {u.suspended_until && new Date(u.suspended_until) > new Date() ? (
+                    <Button size="sm" variant="outline" onClick={() => unsuspend(u.id)}>Reactivar</Button>
+                  ) : (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => suspend(u.id, 1)}>Susp. 1d</Button>
+                      <Button size="sm" variant="outline" onClick={() => suspend(u.id, 7)}>7d</Button>
+                      <Button size="sm" variant="outline" onClick={() => suspend(u.id, 30)}>30d</Button>
+                    </>
+                  )}
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteAccount(u.id)}>
+                    Borrar cuenta
                   </Button>
                 </div>
               </Card>

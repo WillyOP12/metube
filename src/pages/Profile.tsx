@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, Tv, User as UserIcon } from "lucide-react";
+import { ImageCropper } from "@/components/ImageCropper";
 
 const ProfileInner = () => {
   const { user } = useAuth();
@@ -25,6 +26,8 @@ const ProfileInner = () => {
   const [isChannel, setIsChannel] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
   useEffect(() => {
     document.title = "Mi perfil — MeTube";
@@ -114,7 +117,7 @@ const ProfileInner = () => {
             <label className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-foreground text-background flex items-center justify-center cursor-pointer hover:scale-105 transition">
               <Camera className="h-4 w-4" />
               <input type="file" accept="image/*" className="hidden" disabled={uploading}
-                onChange={(e) => e.target.files?.[0] && handleAvatar(e.target.files[0])} />
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) { setPendingAvatar(f); setCropOpen(true); } e.target.value = ""; }} />
             </label>
           </div>
           <div>
@@ -179,6 +182,16 @@ const ProfileInner = () => {
           {saving ? "Guardando..." : "Guardar cambios"}
         </Button>
       </div>
+      <ImageCropper
+        file={pendingAvatar}
+        aspect={1}
+        cropShape="round"
+        outputMaxWidth={512}
+        open={cropOpen}
+        onOpenChange={setCropOpen}
+        onConfirm={handleAvatar}
+        title="Recortar avatar"
+      />
     </div>
   );
 };
