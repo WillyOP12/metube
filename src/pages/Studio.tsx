@@ -174,7 +174,7 @@ const StudioInner = () => {
                   <span className="cursor-pointer">{uploadingBanner ? "Subiendo..." : bannerUrl ? "Cambiar banner" : "Subir banner"}</span>
                 </Button>
                 <input type="file" accept="image/*" className="hidden" disabled={uploadingBanner}
-                  onChange={(e) => e.target.files?.[0] && handleBanner(e.target.files[0])} />
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) onBannerSelected(f); e.target.value = ""; }} />
               </label>
               {bannerUrl && (
                 <Button variant="ghost" onClick={removeBanner}>Quitar</Button>
