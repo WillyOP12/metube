@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { BellPlus, BellRing, Pencil, MapPin, Globe, Twitter, Instagram, Youtube, Github, Link as LinkIcon } from "lucide-react";
 import { ReportDialog } from "./ReportDialog";
+import { LinksDisplay } from "./LinksDisplay";
+import { RichText } from "./RichText";
 import type { Profile, SocialLinks } from "@/hooks/useProfile";
 
 interface Props {
