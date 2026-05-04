@@ -182,6 +182,16 @@ const ProfileInner = () => {
           {saving ? "Guardando..." : "Guardar cambios"}
         </Button>
       </div>
+      <ImageCropper
+        file={pendingAvatar}
+        aspect={1}
+        cropShape="round"
+        outputMaxWidth={512}
+        open={cropOpen}
+        onOpenChange={setCropOpen}
+        onConfirm={handleAvatar}
+        title="Recortar avatar"
+      />
     </div>
   );
 };
