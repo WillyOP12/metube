@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, Tv, User as UserIcon } from "lucide-react";
+import { ImageCropper } from "@/components/ImageCropper";
 
 const ProfileInner = () => {
   const { user } = useAuth();
@@ -25,6 +26,8 @@ const ProfileInner = () => {
   const [isChannel, setIsChannel] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
   useEffect(() => {
     document.title = "Mi perfil — MeTube";
