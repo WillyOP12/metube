@@ -57,10 +57,15 @@ const StudioInner = () => {
   const updateSocial = (key: keyof SocialLinks, value: string) =>
     setSocial((prev) => ({ ...prev, [key]: value }));
 
-  const handleBanner = async (file: File) => {
-    if (!user) return;
+  const onBannerSelected = (file: File) => {
     if (file.size > 8 * 1024 * 1024) return toast.error("Máx 8MB");
     if (!file.type.startsWith("image/")) return toast.error("Solo imágenes");
+    setPendingBanner(file);
+    setBannerCropOpen(true);
+  };
+
+  const handleBanner = async (file: File) => {
+    if (!user) return;
     setUploadingBanner(true);
     try {
       const url = await uploadToBucket("banners", user.id, file, "banner");
