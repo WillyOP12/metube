@@ -50,6 +50,7 @@ const StudioInner = () => {
       setBio(profile.bio ?? "");
       setChannelName(profile.channel_name ?? "");
       setSocial(profile.social_links || {});
+      setRichLinks(profile.links || []);
     }
   }, [profile]);
 
