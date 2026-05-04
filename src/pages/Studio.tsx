@@ -295,6 +295,15 @@ const StudioInner = () => {
           <p className="text-xs text-muted-foreground">Así te ven los demás. Los cambios se aplican al guardar.</p>
         </div>
       </div>
+      <ImageCropper
+        file={pendingBanner}
+        aspect={1920 / 480}
+        outputMaxWidth={1920}
+        open={bannerCropOpen}
+        onOpenChange={setBannerCropOpen}
+        onConfirm={handleBanner}
+        title="Recortar banner"
+      />
     </div>
   );
 };
