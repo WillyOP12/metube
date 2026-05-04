@@ -34,6 +34,9 @@ const StudioInner = () => {
   const [bio, setBio] = useState("");
   const [channelName, setChannelName] = useState("");
   const [social, setSocial] = useState<SocialLinks>({});
+  const [richLinks, setRichLinks] = useState<RichLink[]>([]);
+  const [pendingBanner, setPendingBanner] = useState<File | null>(null);
+  const [bannerCropOpen, setBannerCropOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
