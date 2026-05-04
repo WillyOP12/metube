@@ -138,9 +138,20 @@ const Watch = () => {
             </div>
           </div>
 
-          {video.description && (
-            <div className="rounded-xl bg-surface-1 border border-border p-4">
-              <p className="text-sm whitespace-pre-wrap">{video.description}</p>
+          {(video.description || (video as any).links) && (
+            <div className="rounded-xl bg-surface-1 border border-border p-4 space-y-3">
+              {video.description && <RichText text={video.description} className="text-sm" />}
+              {(() => {
+                const links = parseLinks((video as any).links);
+                return links.length > 0 ? <LinksDisplay links={links} /> : null;
+              })()}
+              {(video as any).hashtags?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {((video as any).hashtags as string[]).map((t) => (
+                    <Link key={t} to={`/search?q=%23${t}`} className="text-xs text-muted-foreground hover:text-foreground">#{t}</Link>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
