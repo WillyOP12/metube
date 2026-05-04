@@ -136,6 +136,7 @@ const StudioInner = () => {
     bio: bio.trim() || null,
     channel_name: channelName.trim() || null,
     social_links: social,
+    links: richLinks,
   };
 
   return (
