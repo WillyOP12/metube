@@ -12,6 +12,7 @@ import { useProfile, type SocialLinks } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToBucket } from "@/lib/upload";
+import { recordMentions } from "@/lib/mentions";
 import { toast } from "sonner";
 import { ImagePlus, Tv, Palette, MapPin, Globe, Twitter, Instagram, Youtube, Github, Link as LinkIcon, Eye } from "lucide-react";
 import { LinksEditor } from "@/components/LinksEditor";
