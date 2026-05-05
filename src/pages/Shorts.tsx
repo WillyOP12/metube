@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, Navigate } from "react-router-dom";
+import { useFocusMode } from "@/hooks/useFocusMode";
 import { AppLayout } from "@/components/AppLayout";
 import { useVideos } from "@/hooks/useVideos";
 import { useLikes } from "@/hooks/useLikes";
