@@ -115,6 +115,20 @@ const SettingsInner = () => {
         </Button>
       </Card>
 
+      <Card className="glass-card p-6 space-y-3">
+        <div className="flex items-center gap-3">
+          <Focus className="h-5 w-5" />
+          <h2 className="font-display text-lg font-semibold">Modo no adictivo</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Desactiva el feed vertical de Shorts: cualquier short se abre en el reproductor estándar.
+        </p>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="focus-toggle" className="text-sm">Activar modo no adictivo</Label>
+          <Switch id="focus-toggle" checked={focus} onCheckedChange={setFocus} />
+        </div>
+      </Card>
+
       <Card className="glass-card p-6 space-y-4">
         <h2 className="font-display text-lg font-semibold">Sesión</h2>
         <p className="text-sm text-muted-foreground">Cerrar sesión en este dispositivo.</p>
