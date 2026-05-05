@@ -25,6 +25,7 @@ const passwordSchema = z.string().min(8, { message: "Mínimo 8 caracteres" }).ma
 const SettingsInner = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { enabled: focus, setEnabled: setFocus } = useFocusMode();
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
