@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Play, Film } from "lucide-react";
+import { Film } from "lucide-react";
 import { formatViews } from "@/lib/format";
 import type { VideoWithChannel } from "@/hooks/useVideos";
 
@@ -37,9 +37,20 @@ export const ShortsRow = ({ shorts, loading }: Props) => {
           {s.thumbnail_url ? (
             <img src={s.thumbnail_url} alt={s.title} loading="lazy" className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
           ) : (
-            <div className="h-full w-full flex items-center justify-center"><Play className="h-8 w-8 text-muted-foreground" /></div>
+            // Fallback: usa el propio vídeo (primer frame) como póster
+            <video
+              src={s.video_url}
+              muted
+              playsInline
+              preload="metadata"
+              className="h-full w-full object-cover group-hover:scale-105 transition-transform pointer-events-none bg-black"
+              onLoadedMetadata={(e) => { try { (e.currentTarget as HTMLVideoElement).currentTime = 0.1; } catch { /* */ } }}
+            />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+          <div className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-white text-[10px] font-medium">
+            <Film className="h-2.5 w-2.5" /> Short
+          </div>
           <div className="absolute bottom-0 left-0 right-0 p-3">
             <h3 className="text-white font-display text-sm leading-snug line-clamp-2">{s.title}</h3>
             <p className="text-white/70 text-[11px] mt-1">{formatViews(s.views)} vistas</p>

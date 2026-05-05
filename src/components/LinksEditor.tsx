@@ -1,11 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
-import { PLATFORM_META, PLATFORM_ORDER, type Platform, type RichLink, normalizeLinkUrl } from "@/lib/links";
+import { PLATFORM_META, type RichLink, normalizeLinkUrl, detectPlatform } from "@/lib/links";
 
 interface Props {
   value: RichLink[];
@@ -14,14 +11,16 @@ interface Props {
 }
 
 export const LinksEditor = ({ value, onChange, max = 10 }: Props) => {
-  const [platform, setPlatform] = useState<Platform>("website");
   const [url, setUrl] = useState("");
   const [label, setLabel] = useState("");
+  const normalized = normalizeLinkUrl(url);
+  const detected = normalized ? detectPlatform(normalized) : "website";
+  const Preview = PLATFORM_META[detected];
 
   const add = () => {
     const u = normalizeLinkUrl(url);
     if (!u) return;
-    const next = [...value, { platform, url: u, label: label.trim() || undefined }];
+    const next = [...value, { platform: detected, url: u, label: label.trim() || undefined }];
     onChange(next.slice(0, max));
     setUrl(""); setLabel("");
   };
@@ -33,11 +32,14 @@ export const LinksEditor = ({ value, onChange, max = 10 }: Props) => {
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {value.map((l, i) => {
-            const Icon = PLATFORM_META[l.platform].icon;
+            const meta = PLATFORM_META[l.platform];
+            const Icon = meta.icon;
             return (
-              <div key={i} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-2 pl-3 pr-1 py-1 text-sm">
-                <Icon className="h-3.5 w-3.5" />
-                <span className="max-w-[200px] truncate">{l.label || PLATFORM_META[l.platform].label}</span>
+              <div key={i} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-2 pl-1 pr-1 py-1 text-sm">
+                <span className="h-6 w-6 rounded-full flex items-center justify-center" style={{ backgroundColor: meta.brand, color: meta.fg }}>
+                  <Icon className="h-3 w-3" />
+                </span>
+                <span className="max-w-[200px] truncate">{l.label || meta.label}</span>
                 <button
                   type="button"
                   onClick={() => remove(i)}
@@ -53,26 +55,19 @@ export const LinksEditor = ({ value, onChange, max = 10 }: Props) => {
       )}
 
       {value.length < max && (
-        <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr_140px_auto] gap-2">
-          <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
-            <SelectTrigger className="bg-surface-1"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {PLATFORM_ORDER.map((p) => {
-                const Icon = PLATFORM_META[p].icon;
-                return (
-                  <SelectItem key={p} value={p}>
-                    <span className="inline-flex items-center gap-2"><Icon className="h-3.5 w-3.5" />{PLATFORM_META[p].label}</span>
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-          <Input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder={PLATFORM_META[platform].placeholder}
-            className="bg-surface-1"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px_auto] gap-2">
+          <div className="relative">
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center" style={{ backgroundColor: Preview.brand, color: Preview.fg }}>
+              <Preview.icon className="h-3 w-3" />
+            </span>
+            <Input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="Pega cualquier URL (X, IG, YouTube, web...)"
+              className="bg-surface-1 pl-10"
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+            />
+          </div>
           <Input
             value={label}
             onChange={(e) => setLabel(e.target.value.slice(0, 30))}
@@ -84,7 +79,7 @@ export const LinksEditor = ({ value, onChange, max = 10 }: Props) => {
           </Button>
         </div>
       )}
-      <p className="text-xs text-muted-foreground">{value.length}/{max} enlaces</p>
+      <p className="text-xs text-muted-foreground">Detección automática de plataforma · {value.length}/{max} enlaces</p>
     </div>
   );
 };

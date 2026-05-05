@@ -13,6 +13,7 @@ export interface VideoRow {
   views: number;
   is_short: boolean;
   created_at: string;
+  hashtags?: string[];
 }
 
 export interface VideoWithChannel extends VideoRow {

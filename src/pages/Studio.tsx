@@ -5,13 +5,14 @@ import { ChannelHeader } from "@/components/ChannelHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionTextarea } from "@/components/MentionTextarea";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useProfile, type SocialLinks } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToBucket } from "@/lib/upload";
+import { recordMentions } from "@/lib/mentions";
 import { toast } from "sonner";
 import { ImagePlus, Tv, Palette, MapPin, Globe, Twitter, Instagram, Youtube, Github, Link as LinkIcon, Eye } from "lucide-react";
 import { LinksEditor } from "@/components/LinksEditor";
@@ -108,6 +109,9 @@ const StudioInner = () => {
     }).eq("id", user.id);
     setSaving(false);
     if (error) return toast.error("No se pudo guardar");
+    if (bio.trim()) {
+      await recordMentions({ text: bio, sourceType: "post", sourceId: user.id, sourceUserId: user.id });
+    }
     toast.success("Canal actualizado");
     refresh();
   };
@@ -196,7 +200,7 @@ const StudioInner = () => {
               </div>
               <div>
                 <Label htmlFor="bio2">Descripción</Label>
-                <Textarea id="bio2" value={bio} onChange={(e) => setBio(e.target.value.slice(0, 500))} className="bg-surface-1 mt-1 min-h-24" placeholder="Cuenta de qué va tu canal..." />
+                <MentionTextarea id="bio2" value={bio} onChange={(v) => setBio(v.slice(0, 500))} className="bg-surface-1 mt-1 min-h-24" placeholder="Cuenta de qué va tu canal… puedes mencionar @usuarios y usar #hashtags." />
                 <p className="text-xs text-muted-foreground mt-1">{bio.length}/500</p>
               </div>
             </div>
