@@ -196,7 +196,7 @@ const StudioInner = () => {
               </div>
               <div>
                 <Label htmlFor="bio2">Descripción</Label>
-                <Textarea id="bio2" value={bio} onChange={(e) => setBio(e.target.value.slice(0, 500))} className="bg-surface-1 mt-1 min-h-24" placeholder="Cuenta de qué va tu canal..." />
+                <MentionTextarea id="bio2" value={bio} onChange={(v) => setBio(v.slice(0, 500))} className="bg-surface-1 mt-1 min-h-24" placeholder="Cuenta de qué va tu canal… puedes mencionar @usuarios y usar #hashtags." />
                 <p className="text-xs text-muted-foreground mt-1">{bio.length}/500</p>
               </div>
             </div>
