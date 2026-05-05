@@ -14,7 +14,9 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Mail, KeyRound, Trash2, LogOut, Settings as SettingsIcon } from "lucide-react";
+import { Mail, KeyRound, Trash2, LogOut, Settings as SettingsIcon, Focus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { useFocusMode } from "@/hooks/useFocusMode";
 import { z } from "zod";
 
 const emailSchema = z.string().trim().email({ message: "Email no válido" }).max(255);
