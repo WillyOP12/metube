@@ -14,7 +14,9 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Mail, KeyRound, Trash2, LogOut, Settings as SettingsIcon } from "lucide-react";
+import { Mail, KeyRound, Trash2, LogOut, Settings as SettingsIcon, Focus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { useFocusMode } from "@/hooks/useFocusMode";
 import { z } from "zod";
 
 const emailSchema = z.string().trim().email({ message: "Email no válido" }).max(255);
@@ -23,6 +25,7 @@ const passwordSchema = z.string().min(8, { message: "Mínimo 8 caracteres" }).ma
 const SettingsInner = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { enabled: focus, setEnabled: setFocus } = useFocusMode();
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -110,6 +113,20 @@ const SettingsInner = () => {
         <Button onClick={updatePassword} disabled={savingPassword || !newPassword}>
           {savingPassword ? "Actualizando..." : "Cambiar contraseña"}
         </Button>
+      </Card>
+
+      <Card className="glass-card p-6 space-y-3">
+        <div className="flex items-center gap-3">
+          <Focus className="h-5 w-5" />
+          <h2 className="font-display text-lg font-semibold">Modo no adictivo</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Desactiva el feed vertical de Shorts: cualquier short se abre en el reproductor estándar.
+        </p>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="focus-toggle" className="text-sm">Activar modo no adictivo</Label>
+          <Switch id="focus-toggle" checked={focus} onCheckedChange={setFocus} />
+        </div>
       </Card>
 
       <Card className="glass-card p-6 space-y-4">

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, Navigate } from "react-router-dom";
+import { useFocusMode } from "@/hooks/useFocusMode";
 import { AppLayout } from "@/components/AppLayout";
 import { useVideos } from "@/hooks/useVideos";
 import { useLikes } from "@/hooks/useLikes";
@@ -100,11 +101,15 @@ const ShortItem = ({ video, active }: { video: VideoWithChannel; active: boolean
 
 const Shorts = () => {
   const { id } = useParams<{ id: string }>();
+  const { enabled: focus } = useFocusMode();
   const { videos, loading } = useVideos({ isShort: true, limit: 30 });
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => { document.title = "Shorts — MeTube"; }, []);
+
+  // Modo no adictivo: redirige a /watch
+  if (focus) return <Navigate to={id ? `/watch/${id}` : "/"} replace />;
 
   // Si llega con /shorts/:id, scrollear al short específico
   useEffect(() => {
