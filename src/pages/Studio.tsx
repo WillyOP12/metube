@@ -109,6 +109,9 @@ const StudioInner = () => {
     }).eq("id", user.id);
     setSaving(false);
     if (error) return toast.error("No se pudo guardar");
+    if (bio.trim()) {
+      await recordMentions({ text: bio, sourceType: "post", sourceId: user.id, sourceUserId: user.id });
+    }
     toast.success("Canal actualizado");
     refresh();
   };
