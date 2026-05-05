@@ -140,7 +140,7 @@ const ProfileInner = () => {
           </div>
           <div>
             <Label htmlFor="bio">Biografía</Label>
-            <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value.slice(0, 280))} className="bg-surface-1 mt-1 min-h-24" />
+            <MentionTextarea id="bio" value={bio} onChange={(v) => setBio(v.slice(0, 280))} className="bg-surface-1 mt-1 min-h-24" placeholder="Cuenta algo sobre ti… puedes mencionar @usuarios y usar #hashtags." />
             <p className="text-xs text-muted-foreground mt-1">{bio.length}/280</p>
           </div>
         </div>
