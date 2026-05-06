@@ -45,7 +45,13 @@ export const useProfile = () => {
     if (!user) { setProfile(null); setLoading(false); return; }
     setLoading(true);
     const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-    setProfile(hydrate(data));
+    const { data: mod } = await supabase
+      .from("profile_moderation")
+      .select("suspended_until, suspension_reason")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const merged: any = data ? { ...data, suspended_until: mod?.suspended_until ?? null, suspension_reason: mod?.suspension_reason ?? null } : null;
+    setProfile(hydrate(merged));
     setLoading(false);
   };
 
