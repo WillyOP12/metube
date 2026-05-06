@@ -316,14 +316,33 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
                   </button>
                 </div>
               )}
+              {pollDraft && (
+                <PollComposer
+                  draft={pollDraft}
+                  onChange={setPollDraft}
+                  onRemove={() => setPollDraft(null)}
+                />
+              )}
               <div className="flex items-center justify-between">
-                <label className="cursor-pointer text-muted-foreground hover:text-foreground transition">
-                  <ImagePlus className="h-5 w-5" />
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
-                </label>
+                <div className="flex items-center gap-3">
+                  <label className="cursor-pointer text-muted-foreground hover:text-foreground transition">
+                    <ImagePlus className="h-5 w-5" />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
+                  </label>
+                  {!pollDraft && (
+                    <button
+                      type="button"
+                      onClick={() => setPollDraft({ question: "", options: ["", ""], multi_choice: false, closes_at: null })}
+                      className="text-muted-foreground hover:text-foreground transition"
+                      title="Añadir encuesta"
+                    >
+                      <BarChart3 className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground">{content.length}/500</span>
-                  <Button onClick={submit} disabled={posting || !content.trim()} size="sm">
+                  <Button onClick={submit} disabled={posting || (!content.trim() && !pollDraft)} size="sm">
                     {posting ? "Publicando..." : "Publicar"}
                   </Button>
                 </div>
@@ -389,6 +408,7 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
               {post.image_url && (
                 <img src={post.image_url} alt="" className="mt-3 rounded-lg max-h-96 object-cover w-full" />
               )}
+              <PollBlock postId={post.id} isOwner={isOwner} />
               <div className="mt-3 flex items-center gap-4">
                 <button onClick={() => toggleLike(post)} className={`inline-flex items-center gap-2 text-sm transition ${post.liked ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                   <Heart className={`h-4 w-4 ${post.liked ? "fill-current" : ""}`} /> {post.likes}
