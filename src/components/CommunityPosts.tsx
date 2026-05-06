@@ -200,8 +200,13 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
 
   const submit = async () => {
     if (!user) { toast.error("Inicia sesión para publicar"); return; }
-    if (!content.trim()) { toast.error("Escribe algo antes de publicar"); return; }
+    if (!content.trim() && !pollDraft) { toast.error("Escribe algo antes de publicar"); return; }
     if (user.id !== channelId) { toast.error("Solo puedes publicar en tu propio canal"); return; }
+    if (pollDraft) {
+      if (!pollDraft.question.trim()) { toast.error("La encuesta necesita una pregunta"); return; }
+      const validOpts = pollDraft.options.map(o => o.trim()).filter(Boolean);
+      if (validOpts.length < 2) { toast.error("La encuesta necesita al menos 2 opciones"); return; }
+    }
     setPosting(true);
     let imageUrl: string | null = null;
     if (image) {
@@ -216,15 +221,33 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
     const { data, error } = await supabase.from("posts").insert({
       channel_id: user.id, content: content.trim(), image_url: imageUrl, hashtags,
     }).select("id").single();
-    setPosting(false);
     if (error || !data) {
+      setPosting(false);
       toast.error(`No se pudo publicar: ${error?.message}`);
-    } else {
-      await recordMentions({ text: content, sourceType: "post", sourceId: data.id, sourceUserId: user.id });
-      toast.success("¡Publicado!");
-      setContent(""); setImage(null);
-      load();
+      return;
     }
+    if (pollDraft) {
+      const { data: poll, error: pollErr } = await supabase.from("polls").insert({
+        post_id: data.id,
+        question: pollDraft.question.trim(),
+        multi_choice: pollDraft.multi_choice,
+        closes_at: pollDraft.closes_at ? new Date(pollDraft.closes_at).toISOString() : null,
+      }).select("id").single();
+      if (pollErr || !poll) {
+        toast.error("Post creado, pero la encuesta falló");
+      } else {
+        const validOpts = pollDraft.options.map(o => o.trim()).filter(Boolean);
+        const { error: optErr } = await supabase.from("poll_options").insert(
+          validOpts.map((text, i) => ({ poll_id: poll.id, text, position: i }))
+        );
+        if (optErr) toast.error("Opciones de encuesta fallaron");
+      }
+    }
+    await recordMentions({ text: content, sourceType: "post", sourceId: data.id, sourceUserId: user.id });
+    setPosting(false);
+    toast.success("¡Publicado!");
+    setContent(""); setImage(null); setPollDraft(null);
+    load();
   };
 
   const startEdit = (p: Post) => { setEditingId(p.id); setEditingText(p.content); };
