@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Heart, Trash2, ImagePlus, X, Pencil, Check, MessageSquare } from "lucide-react";
+import { Heart, Trash2, ImagePlus, X, Pencil, Check, MessageSquare, BarChart3 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
@@ -14,6 +14,8 @@ import { RichText } from "./RichText";
 import { Link } from "react-router-dom";
 import { recordMentions } from "@/lib/mentions";
 import { extractHashtags } from "./RichText";
+import { PollBlock } from "./PollBlock";
+import { PollComposer, type PollDraft } from "./PollComposer";
 
 interface PostAuthor {
   id: string;
@@ -155,6 +157,7 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
   const [openComments, setOpenComments] = useState<Set<string>>(new Set());
+  const [pollDraft, setPollDraft] = useState<PollDraft | null>(null);
 
   const isOwner = user?.id === channelId;
 
