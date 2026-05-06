@@ -270,9 +270,8 @@ const UsersTab = ({ currentUserId }: { currentUserId: string | undefined }) => {
     const until = new Date(Date.now() + days * 86400000).toISOString();
     const reason = prompt(`Motivo de la suspensión (${days} días):`) || null;
     const { error } = await supabase
-      .from("profiles")
-      .update({ suspended_until: until, suspension_reason: reason, suspended_by: currentUserId })
-      .eq("id", userId);
+      .from("profile_moderation")
+      .upsert({ user_id: userId, suspended_until: until, suspension_reason: reason, suspended_by: currentUserId });
     if (error) return toast.error("No se pudo suspender");
     toast.success(`Cuenta suspendida ${days} días (solo lectura)`);
     load();
@@ -280,9 +279,8 @@ const UsersTab = ({ currentUserId }: { currentUserId: string | undefined }) => {
 
   const unsuspend = async (userId: string) => {
     const { error } = await supabase
-      .from("profiles")
-      .update({ suspended_until: null, suspension_reason: null, suspended_by: null })
-      .eq("id", userId);
+      .from("profile_moderation")
+      .upsert({ user_id: userId, suspended_until: null, suspension_reason: null, suspended_by: null });
     if (error) return toast.error("No se pudo levantar");
     toast.success("Suspensión retirada");
     load();
