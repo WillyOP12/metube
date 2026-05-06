@@ -223,20 +223,29 @@ const UsersTab = ({ currentUserId }: { currentUserId: string | undefined }) => {
     setLoading(true);
     let q = supabase
       .from("profiles")
-      .select("id, display_name, username, avatar_url, created_at, is_channel, suspended_until")
+      .select("id, display_name, username, avatar_url, created_at, is_channel")
       .order("created_at", { ascending: false })
       .limit(50);
     if (search.trim()) q = q.or(`display_name.ilike.%${search}%,username.ilike.%${search}%`);
     const { data: profiles } = await q;
     const ids = (profiles ?? []).map((p) => p.id);
-    const { data: roles } = ids.length
-      ? await supabase.from("user_roles").select("user_id, role").in("user_id", ids)
-      : { data: [] };
+    const [{ data: roles }, { data: mods }] = await Promise.all([
+      ids.length ? supabase.from("user_roles").select("user_id, role").in("user_id", ids) : Promise.resolve({ data: [] as any[] }),
+      ids.length ? supabase.from("profile_moderation").select("user_id, suspended_until").in("user_id", ids) : Promise.resolve({ data: [] as any[] }),
+    ]);
     const rolesByUser = (roles ?? []).reduce<Record<string, ("admin" | "moderator" | "user")[]>>((acc, r: any) => {
       (acc[r.user_id] ||= []).push(r.role);
       return acc;
     }, {});
-    setUsers((profiles ?? []).map((p) => ({ ...p, roles: rolesByUser[p.id] ?? ["user"] })) as UserRow[]);
+    const susByUser = (mods ?? []).reduce<Record<string, string | null>>((acc, m: any) => {
+      acc[m.user_id] = m.suspended_until;
+      return acc;
+    }, {});
+    setUsers((profiles ?? []).map((p: any) => ({
+      ...p,
+      suspended_until: susByUser[p.id] ?? null,
+      roles: rolesByUser[p.id] ?? ["user"],
+    })) as UserRow[]);
     setLoading(false);
   };
 
