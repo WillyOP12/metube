@@ -164,7 +164,7 @@ export const PollBlock = ({
               }`}
             >
               <span className="inline-flex items-center gap-2">
-                <span className={`h-3.5 w-3.5 rounded-${poll.multi_choice ? "sm" : "full"} border ${checked ? "bg-foreground border-foreground" : "border-foreground/40"}`} />
+                <span className={`h-3.5 w-3.5 border ${poll.multi_choice ? "rounded-sm" : "rounded-full"} ${checked ? "bg-foreground border-foreground" : "border-foreground/40"}`} />
                 {o.text}
               </span>
             </button>
