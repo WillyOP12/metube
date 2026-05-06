@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Heart, Trash2, ImagePlus, X, Pencil, Check, MessageSquare } from "lucide-react";
+import { Heart, Trash2, ImagePlus, X, Pencil, Check, MessageSquare, BarChart3 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
@@ -14,6 +14,8 @@ import { RichText } from "./RichText";
 import { Link } from "react-router-dom";
 import { recordMentions } from "@/lib/mentions";
 import { extractHashtags } from "./RichText";
+import { PollBlock } from "./PollBlock";
+import { PollComposer, type PollDraft } from "./PollComposer";
 
 interface PostAuthor {
   id: string;
@@ -155,6 +157,7 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
   const [openComments, setOpenComments] = useState<Set<string>>(new Set());
+  const [pollDraft, setPollDraft] = useState<PollDraft | null>(null);
 
   const isOwner = user?.id === channelId;
 
@@ -197,8 +200,13 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
 
   const submit = async () => {
     if (!user) { toast.error("Inicia sesión para publicar"); return; }
-    if (!content.trim()) { toast.error("Escribe algo antes de publicar"); return; }
+    if (!content.trim() && !pollDraft) { toast.error("Escribe algo antes de publicar"); return; }
     if (user.id !== channelId) { toast.error("Solo puedes publicar en tu propio canal"); return; }
+    if (pollDraft) {
+      if (!pollDraft.question.trim()) { toast.error("La encuesta necesita una pregunta"); return; }
+      const validOpts = pollDraft.options.map(o => o.trim()).filter(Boolean);
+      if (validOpts.length < 2) { toast.error("La encuesta necesita al menos 2 opciones"); return; }
+    }
     setPosting(true);
     let imageUrl: string | null = null;
     if (image) {
@@ -213,15 +221,33 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
     const { data, error } = await supabase.from("posts").insert({
       channel_id: user.id, content: content.trim(), image_url: imageUrl, hashtags,
     }).select("id").single();
-    setPosting(false);
     if (error || !data) {
+      setPosting(false);
       toast.error(`No se pudo publicar: ${error?.message}`);
-    } else {
-      await recordMentions({ text: content, sourceType: "post", sourceId: data.id, sourceUserId: user.id });
-      toast.success("¡Publicado!");
-      setContent(""); setImage(null);
-      load();
+      return;
     }
+    if (pollDraft) {
+      const { data: poll, error: pollErr } = await supabase.from("polls").insert({
+        post_id: data.id,
+        question: pollDraft.question.trim(),
+        multi_choice: pollDraft.multi_choice,
+        closes_at: pollDraft.closes_at ? new Date(pollDraft.closes_at).toISOString() : null,
+      }).select("id").single();
+      if (pollErr || !poll) {
+        toast.error("Post creado, pero la encuesta falló");
+      } else {
+        const validOpts = pollDraft.options.map(o => o.trim()).filter(Boolean);
+        const { error: optErr } = await supabase.from("poll_options").insert(
+          validOpts.map((text, i) => ({ poll_id: poll.id, text, position: i }))
+        );
+        if (optErr) toast.error("Opciones de encuesta fallaron");
+      }
+    }
+    await recordMentions({ text: content, sourceType: "post", sourceId: data.id, sourceUserId: user.id });
+    setPosting(false);
+    toast.success("¡Publicado!");
+    setContent(""); setImage(null); setPollDraft(null);
+    load();
   };
 
   const startEdit = (p: Post) => { setEditingId(p.id); setEditingText(p.content); };
@@ -290,14 +316,33 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
                   </button>
                 </div>
               )}
+              {pollDraft && (
+                <PollComposer
+                  draft={pollDraft}
+                  onChange={setPollDraft}
+                  onRemove={() => setPollDraft(null)}
+                />
+              )}
               <div className="flex items-center justify-between">
-                <label className="cursor-pointer text-muted-foreground hover:text-foreground transition">
-                  <ImagePlus className="h-5 w-5" />
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
-                </label>
+                <div className="flex items-center gap-3">
+                  <label className="cursor-pointer text-muted-foreground hover:text-foreground transition">
+                    <ImagePlus className="h-5 w-5" />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
+                  </label>
+                  {!pollDraft && (
+                    <button
+                      type="button"
+                      onClick={() => setPollDraft({ question: "", options: ["", ""], multi_choice: false, closes_at: null })}
+                      className="text-muted-foreground hover:text-foreground transition"
+                      title="Añadir encuesta"
+                    >
+                      <BarChart3 className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground">{content.length}/500</span>
-                  <Button onClick={submit} disabled={posting || !content.trim()} size="sm">
+                  <Button onClick={submit} disabled={posting || (!content.trim() && !pollDraft)} size="sm">
                     {posting ? "Publicando..." : "Publicar"}
                   </Button>
                 </div>
@@ -363,6 +408,7 @@ export const CommunityPosts = ({ channelId, channel }: { channelId: string; chan
               {post.image_url && (
                 <img src={post.image_url} alt="" className="mt-3 rounded-lg max-h-96 object-cover w-full" />
               )}
+              <PollBlock postId={post.id} isOwner={isOwner} />
               <div className="mt-3 flex items-center gap-4">
                 <button onClick={() => toggleLike(post)} className={`inline-flex items-center gap-2 text-sm transition ${post.liked ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                   <Heart className={`h-4 w-4 ${post.liked ? "fill-current" : ""}`} /> {post.likes}

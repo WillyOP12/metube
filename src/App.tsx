@@ -10,6 +10,7 @@ import Index from "./pages/Index.tsx";
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
 const Studio = lazy(() => import("./pages/Studio.tsx"));
+const VideoEditor = lazy(() => import("./pages/VideoEditor.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Upload = lazy(() => import("./pages/Upload.tsx"));
 const Watch = lazy(() => import("./pages/Watch.tsx"));
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/studio" element={<Studio />} />
+              <Route path="/studio/editor" element={<VideoEditor />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/upload" element={<Upload />} />
               <Route path="/watch/:id" element={<Watch />} />
