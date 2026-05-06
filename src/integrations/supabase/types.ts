@@ -325,6 +325,38 @@ export type Database = {
           },
         ]
       }
+      profile_moderation: {
+        Row: {
+          suspended_by: string | null
+          suspended_until: string | null
+          suspension_reason: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          suspended_by?: string | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          suspended_by?: string | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_moderation_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           accent_color: string | null
@@ -341,9 +373,6 @@ export type Database = {
           location: string | null
           social_links: Json
           subscriber_count: number
-          suspended_by: string | null
-          suspended_until: string | null
-          suspension_reason: string | null
           updated_at: string
           username: string | null
         }
@@ -362,9 +391,6 @@ export type Database = {
           location?: string | null
           social_links?: Json
           subscriber_count?: number
-          suspended_by?: string | null
-          suspended_until?: string | null
-          suspension_reason?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -383,9 +409,6 @@ export type Database = {
           location?: string | null
           social_links?: Json
           subscriber_count?: number
-          suspended_by?: string | null
-          suspended_until?: string | null
-          suspension_reason?: string | null
           updated_at?: string
           username?: string | null
         }
