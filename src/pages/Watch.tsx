@@ -44,7 +44,7 @@ const Watch = () => {
   useEffect(() => {
     if (video && !viewedRef.current) {
       viewedRef.current = true;
-      supabase.rpc("increment_video_view", { _video_id: video.id });
+      supabase.rpc("increment_video_view", { _video_id: video.id }).then(() => refresh());
       if (user) logHistory(video.id);
     }
   }, [video, user]);
