@@ -27,7 +27,7 @@ import { toast } from "sonner";
 
 const Watch = () => {
   const { id } = useParams<{ id: string }>();
-  const { video, loading } = useVideo(id);
+  const { video, loading, refresh } = useVideo(id);
   const { likes, dislikes, mine, toggle } = useLikes(id);
   const { subscribed, count, toggle: toggleSub, isOwner } = useSubscription(video?.channel_id);
   const { videos: related } = useVideos({ limit: 8 });
