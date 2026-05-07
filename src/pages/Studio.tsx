@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadToBucket } from "@/lib/upload";
 import { recordMentions } from "@/lib/mentions";
 import { toast } from "sonner";
-import { ImagePlus, Tv, Palette, MapPin, Globe, Twitter, Instagram, Youtube, Github, Link as LinkIcon, Eye, Film } from "lucide-react";
+import { ImagePlus, Tv, Palette, MapPin, Globe, Twitter, Instagram, Youtube, Github, Link as LinkIcon, Eye, Film, Video } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { LinksEditor } from "@/components/LinksEditor";
 import { ImageCropper } from "@/components/ImageCropper";
@@ -152,6 +152,11 @@ const StudioInner = () => {
           <p className="text-muted-foreground text-sm">Personaliza el aspecto de tu canal con vista previa en directo.</p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button asChild variant="outline" className="gap-2">
+            <RouterLink to="/studio/videos">
+              <Video className="h-4 w-4" />Mis vídeos
+            </RouterLink>
+          </Button>
           <Button asChild variant="outline" className="gap-2">
             <RouterLink to="/studio/editor">
               <Film className="h-4 w-4" />Editor de vídeo
