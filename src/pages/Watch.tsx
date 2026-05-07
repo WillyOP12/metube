@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { isYouTube, youtubeEmbed, isVimeo, vimeoEmbed } from "@/lib/format";
 import { Comments } from "@/components/Comments";
 import { ReportDialog } from "@/components/ReportDialog";
 import { useVideo, useVideos } from "@/hooks/useVideos";
@@ -26,7 +27,7 @@ import { toast } from "sonner";
 
 const Watch = () => {
   const { id } = useParams<{ id: string }>();
-  const { video, loading } = useVideo(id);
+  const { video, loading, refresh } = useVideo(id);
   const { likes, dislikes, mine, toggle } = useLikes(id);
   const { subscribed, count, toggle: toggleSub, isOwner } = useSubscription(video?.channel_id);
   const { videos: related } = useVideos({ limit: 8 });
@@ -43,7 +44,7 @@ const Watch = () => {
   useEffect(() => {
     if (video && !viewedRef.current) {
       viewedRef.current = true;
-      supabase.rpc("increment_video_view", { _video_id: video.id });
+      supabase.rpc("increment_video_view", { _video_id: video.id }).then(() => refresh());
       if (user) logHistory(video.id);
     }
   }, [video, user]);
@@ -84,7 +85,26 @@ const Watch = () => {
     <AppLayout>
       <div className="grid lg:grid-cols-[1fr_360px] gap-8 max-w-[1600px] mx-auto animate-fade-in">
         <div className="space-y-5 min-w-0">
-          <VideoPlayer url={video.video_url} source={video.source} poster={video.thumbnail_url} vertical={video.is_short} />
+          {(() => {
+            const isExternal = video.source === "external";
+            const yt = isExternal && isYouTube(video.video_url) ? youtubeEmbed(video.video_url) : null;
+            const vm = isExternal && !yt && isVimeo(video.video_url) ? vimeoEmbed(video.video_url) : null;
+            const embed = yt || vm;
+            if (embed) {
+              return (
+                <div className={`w-full ${video.is_short ? "aspect-[9/16] max-h-[80vh] mx-auto" : "aspect-video"} rounded-xl overflow-hidden border border-border bg-black`}>
+                  <iframe
+                    src={embed + (embed.includes("?") ? "&" : "?") + "autoplay=1"}
+                    className="h-full w-full"
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
+                    title={video.title}
+                  />
+                </div>
+              );
+            }
+            return <VideoPlayer url={video.video_url} source={video.source} poster={video.thumbnail_url} vertical={video.is_short} />;
+          })()}
 
           <div>
             <h1 className="font-display text-2xl font-bold leading-tight">{video.title}</h1>
