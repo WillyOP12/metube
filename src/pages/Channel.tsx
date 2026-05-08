@@ -29,7 +29,9 @@ const Channel = () => {
   const [loading, setLoading] = useState(true);
   const [postCount, setPostCount] = useState(0);
   const [publicPlaylists, setPublicPlaylists] = useState<PublicPlaylist[]>([]);
-  const { videos, loading: videosLoading } = useVideos({ channelId: id });
+  const { videos: allVideos, loading: videosLoading } = useVideos({ channelId: id });
+  const videos = allVideos.filter(v => !v.is_short);
+  const shorts = allVideos.filter(v => v.is_short);
   const { subscribed, count, toggle, isOwner } = useSubscription(id);
 
   useEffect(() => {
