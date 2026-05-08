@@ -9,7 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   ArrowLeft, Film, Plus, Play, Pause, Trash2, Type, Smile, Download, Upload,
-  Volume2, Scissors, GripVertical,
+  Volume2, Scissors, GripVertical, Camera, Square, Circle, Monitor,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
