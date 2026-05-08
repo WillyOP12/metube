@@ -102,12 +102,33 @@ const Channel = () => {
         <Tabs defaultValue={isOwner && profile.is_channel ? "community" : "videos"} className="mt-8">
           <TabsList className="bg-surface-1 border border-border">
             <TabsTrigger value="videos">Vídeos</TabsTrigger>
+            {shorts.length > 0 && <TabsTrigger value="shorts">Shorts</TabsTrigger>}
             {showPlaylists && <TabsTrigger value="playlists">Listas</TabsTrigger>}
             {showCommunity && <TabsTrigger value="community">Comunidad</TabsTrigger>}
           </TabsList>
           <TabsContent value="videos" className="mt-6">
             <VideoGrid videos={videos} loading={videosLoading} emptyText="Este perfil aún no tiene vídeos." />
           </TabsContent>
+          {shorts.length > 0 && (
+            <TabsContent value="shorts" className="mt-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {shorts.map(s => (
+                  <Link key={s.id} to={`/shorts/${s.id}`} className="group relative aspect-[9/16] rounded-xl overflow-hidden bg-surface-2 border border-border hover-lift">
+                    {s.thumbnail_url ? (
+                      <img src={s.thumbnail_url} alt={s.title} loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center"><Play className="h-8 w-8 text-muted-foreground" /></div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                      <p className="text-white text-xs font-semibold line-clamp-2">{s.title}</p>
+                      <p className="text-white/70 text-[10px] mt-0.5">{s.views.toLocaleString()} vistas</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </TabsContent>
+          )}
           {showPlaylists && (
             <TabsContent value="playlists" className="mt-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
