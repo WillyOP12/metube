@@ -298,6 +298,49 @@ const VideoEditorInner = () => {
   };
   const onCanvasMouseUp = () => { draggingRef.current = null; };
 
+  // ---------- Recording (camera / screen) ----------
+  const startRecording = async (mode: "camera" | "screen") => {
+    if (recording) return;
+    try {
+      const stream = mode === "camera"
+        ? await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: true })
+        : await (navigator.mediaDevices as any).getDisplayMedia({ video: true, audio: true });
+      recordStreamRef.current = stream;
+      const mime = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(m => MediaRecorder.isTypeSupported(m)) || "video/webm";
+      const mr = new MediaRecorder(stream, { mimeType: mime });
+      recordChunksRef.current = [];
+      mr.ondataavailable = (e) => { if (e.data.size > 0) recordChunksRef.current.push(e.data); };
+      mr.onstop = async () => {
+        const blob = new Blob(recordChunksRef.current, { type: mime });
+        const file = new File([blob], `${mode}-${Date.now()}.webm`, { type: mime });
+        await addFiles([file]);
+        stream.getTracks().forEach(t => t.stop());
+        recordStreamRef.current = null;
+        if (recordTimerRef.current) { window.clearInterval(recordTimerRef.current); recordTimerRef.current = null; }
+        setRecordTime(0);
+        setRecording(null);
+        toast.success("Grabación añadida a la línea de tiempo");
+      };
+      stream.getVideoTracks()[0].addEventListener("ended", () => { try { mr.state !== "inactive" && mr.stop(); } catch {} });
+      mr.start(250);
+      recorderRef.current = mr;
+      setRecording(mode);
+      const started = performance.now();
+      recordTimerRef.current = window.setInterval(() => setRecordTime((performance.now() - started) / 1000), 200);
+    } catch (e: any) {
+      toast.error("No se pudo iniciar la grabación: " + (e?.message ?? "permiso denegado"));
+    }
+  };
+  const stopRecording = () => {
+    const mr = recorderRef.current;
+    if (mr && mr.state !== "inactive") mr.stop();
+  };
+  useEffect(() => () => {
+    try { recorderRef.current?.state !== "inactive" && recorderRef.current?.stop(); } catch {}
+    recordStreamRef.current?.getTracks().forEach(t => t.stop());
+    if (recordTimerRef.current) window.clearInterval(recordTimerRef.current);
+  }, []);
+
   // ---------- Export ----------
   const exportVideo = async () => {
     if (clips.length === 0) return toast.error("Añade al menos un clip");
