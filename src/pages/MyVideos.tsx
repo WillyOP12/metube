@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -110,43 +111,58 @@ const MyVideosInner = () => {
           <p className="text-muted-foreground mb-4">Aún no has subido nada.</p>
           <Button asChild><Link to="/upload">Subir tu primer vídeo</Link></Button>
         </Card>
-      ) : (
-        <div className="space-y-3">
-          {videos.map((v) => (
-            <Card key={v.id} className="glass-card p-3 flex flex-col sm:flex-row gap-4">
-              <Link to={`/watch/${v.id}`} className="relative shrink-0 w-full sm:w-48 aspect-video rounded-lg overflow-hidden bg-surface-2 group">
-                {v.thumbnail_url ? (
-                  <img src={v.thumbnail_url} alt={v.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-muted-foreground">{v.is_short ? <Film className="h-8 w-8" /> : <Video className="h-8 w-8" />}</div>
-                )}
-                {v.duration && (
-                  <span className="absolute bottom-1 right-1 text-[10px] px-1.5 py-0.5 rounded bg-black/80 text-white font-mono">
-                    {formatDuration(v.duration)}
-                  </span>
-                )}
-                {v.is_short && (
-                  <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-semibold">SHORT</span>
-                )}
-              </Link>
-              <div className="flex-1 min-w-0 flex flex-col">
-                <Link to={`/watch/${v.id}`} className="font-display font-semibold truncate hover:underline">{v.title}</Link>
-                {v.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{v.description}</p>}
-                <p className="text-xs text-muted-foreground mt-auto pt-2 flex items-center gap-3">
-                  <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{formatViews(v.views)}</span>
-                  <span>·</span>
-                  <span>{formatDistanceToNow(new Date(v.created_at), { addSuffix: true, locale: es })}</span>
-                </p>
-              </div>
-              <div className="flex sm:flex-col gap-2 shrink-0 sm:items-end">
-                <Button variant="outline" size="sm" onClick={() => openEdit(v)} className="gap-1"><Pencil className="h-3.5 w-3.5" />Editar</Button>
-                <Button variant="outline" size="sm" asChild className="gap-1"><Link to={`/watch/${v.id}`}><ExternalLink className="h-3.5 w-3.5" />Ver</Link></Button>
-                <Button variant="ghost" size="sm" onClick={() => setDeleting(v)} className="gap-1 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" />Borrar</Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      ) : (() => {
+        const longs = videos.filter(v => !v.is_short);
+        const shorts = videos.filter(v => v.is_short);
+        const renderRow = (v: Row) => (
+          <Card key={v.id} className="glass-card p-3 flex flex-col sm:flex-row gap-4">
+            <Link to={v.is_short ? `/shorts/${v.id}` : `/watch/${v.id}`} className={`relative shrink-0 w-full ${v.is_short ? "sm:w-28 aspect-[9/16]" : "sm:w-48 aspect-video"} rounded-lg overflow-hidden bg-surface-2 group`}>
+              {v.thumbnail_url ? (
+                <img src={v.thumbnail_url} alt={v.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-muted-foreground">{v.is_short ? <Film className="h-8 w-8" /> : <Video className="h-8 w-8" />}</div>
+              )}
+              {v.duration && (
+                <span className="absolute bottom-1 right-1 text-[10px] px-1.5 py-0.5 rounded bg-black/80 text-white font-mono">{formatDuration(v.duration)}</span>
+              )}
+              {v.is_short && (
+                <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-semibold">SHORT</span>
+              )}
+            </Link>
+            <div className="flex-1 min-w-0 flex flex-col">
+              <Link to={v.is_short ? `/shorts/${v.id}` : `/watch/${v.id}`} className="font-display font-semibold truncate hover:underline">{v.title}</Link>
+              {v.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{v.description}</p>}
+              <p className="text-xs text-muted-foreground mt-auto pt-2 flex items-center gap-3">
+                <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{formatViews(v.views)}</span>
+                <span>·</span>
+                <span>{formatDistanceToNow(new Date(v.created_at), { addSuffix: true, locale: es })}</span>
+              </p>
+            </div>
+            <div className="flex sm:flex-col gap-2 shrink-0 sm:items-end">
+              <Button variant="outline" size="sm" onClick={() => openEdit(v)} className="gap-1"><Pencil className="h-3.5 w-3.5" />Editar</Button>
+              <Button variant="outline" size="sm" asChild className="gap-1"><Link to={v.is_short ? `/shorts/${v.id}` : `/watch/${v.id}`}><ExternalLink className="h-3.5 w-3.5" />Ver</Link></Button>
+              <Button variant="ghost" size="sm" onClick={() => setDeleting(v)} className="gap-1 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" />Borrar</Button>
+            </div>
+          </Card>
+        );
+        const empty = (label: string) => (
+          <Card className="glass-card p-8 text-center text-muted-foreground text-sm">No tienes {label} todavía.</Card>
+        );
+        return (
+          <Tabs defaultValue="videos">
+            <TabsList className="bg-surface-1 border border-border">
+              <TabsTrigger value="videos">Vídeos ({longs.length})</TabsTrigger>
+              <TabsTrigger value="shorts">Shorts ({shorts.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="videos" className="mt-4 space-y-3">
+              {longs.length === 0 ? empty("vídeos") : longs.map(renderRow)}
+            </TabsContent>
+            <TabsContent value="shorts" className="mt-4 space-y-3">
+              {shorts.length === 0 ? empty("shorts") : shorts.map(renderRow)}
+            </TabsContent>
+          </Tabs>
+        );
+      })()}
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>

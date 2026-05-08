@@ -9,7 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   ArrowLeft, Film, Plus, Play, Pause, Trash2, Type, Smile, Download, Upload,
-  Volume2, Scissors, GripVertical,
+  Volume2, Scissors, GripVertical, Camera, Square, Circle, Monitor,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -61,6 +61,12 @@ const VideoEditorInner = () => {
   const [tNow, setTNow] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const [recording, setRecording] = useState<null | "camera" | "screen">(null);
+  const [recordTime, setRecordTime] = useState(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordChunksRef = useRef<Blob[]>([]);
+  const recordStreamRef = useRef<MediaStream | null>(null);
+  const recordTimerRef = useRef<number | null>(null);
 
   const previewRef = useRef<HTMLCanvasElement>(null);
   const hiddenVideoRef = useRef<HTMLVideoElement>(null);
@@ -292,6 +298,49 @@ const VideoEditorInner = () => {
   };
   const onCanvasMouseUp = () => { draggingRef.current = null; };
 
+  // ---------- Recording (camera / screen) ----------
+  const startRecording = async (mode: "camera" | "screen") => {
+    if (recording) return;
+    try {
+      const stream = mode === "camera"
+        ? await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: true })
+        : await (navigator.mediaDevices as any).getDisplayMedia({ video: true, audio: true });
+      recordStreamRef.current = stream;
+      const mime = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(m => MediaRecorder.isTypeSupported(m)) || "video/webm";
+      const mr = new MediaRecorder(stream, { mimeType: mime });
+      recordChunksRef.current = [];
+      mr.ondataavailable = (e) => { if (e.data.size > 0) recordChunksRef.current.push(e.data); };
+      mr.onstop = async () => {
+        const blob = new Blob(recordChunksRef.current, { type: mime });
+        const file = new File([blob], `${mode}-${Date.now()}.webm`, { type: mime });
+        await addFiles([file]);
+        stream.getTracks().forEach(t => t.stop());
+        recordStreamRef.current = null;
+        if (recordTimerRef.current) { window.clearInterval(recordTimerRef.current); recordTimerRef.current = null; }
+        setRecordTime(0);
+        setRecording(null);
+        toast.success("Grabación añadida a la línea de tiempo");
+      };
+      stream.getVideoTracks()[0].addEventListener("ended", () => { try { mr.state !== "inactive" && mr.stop(); } catch {} });
+      mr.start(250);
+      recorderRef.current = mr;
+      setRecording(mode);
+      const started = performance.now();
+      recordTimerRef.current = window.setInterval(() => setRecordTime((performance.now() - started) / 1000), 200);
+    } catch (e: any) {
+      toast.error("No se pudo iniciar la grabación: " + (e?.message ?? "permiso denegado"));
+    }
+  };
+  const stopRecording = () => {
+    const mr = recorderRef.current;
+    if (mr && mr.state !== "inactive") mr.stop();
+  };
+  useEffect(() => () => {
+    try { recorderRef.current?.state !== "inactive" && recorderRef.current?.stop(); } catch {}
+    recordStreamRef.current?.getTracks().forEach(t => t.stop());
+    if (recordTimerRef.current) window.clearInterval(recordTimerRef.current);
+  }, []);
+
   // ---------- Export ----------
   const exportVideo = async () => {
     if (clips.length === 0) return toast.error("Añade al menos un clip");
@@ -460,46 +509,91 @@ const VideoEditorInner = () => {
             </div>
           </Card>
 
-          {/* Timeline strip */}
+          {/* Timeline strip — CapCut-style */}
           <Card className="glass-card p-3">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <p className="text-sm font-display font-semibold">Línea de tiempo</p>
-              <label>
-                <Button asChild size="sm" variant="outline" className="gap-1">
-                  <span className="cursor-pointer"><Plus className="h-3.5 w-3.5" />Añadir vídeo</span>
-                </Button>
-                <input type="file" accept="video/*" multiple className="hidden" onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }} />
-              </label>
+              <div className="flex items-center gap-2 flex-wrap">
+                {recording ? (
+                  <Button size="sm" variant="destructive" onClick={stopRecording} className="gap-1">
+                    <Square className="h-3.5 w-3.5" />Detener {recordTime.toFixed(1)}s
+                  </Button>
+                ) : (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => startRecording("camera")} className="gap-1">
+                      <Camera className="h-3.5 w-3.5" />Cámara
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => startRecording("screen")} className="gap-1">
+                      <Monitor className="h-3.5 w-3.5" />Pantalla
+                    </Button>
+                  </>
+                )}
+                <label>
+                  <Button asChild size="sm" variant="outline" className="gap-1">
+                    <span className="cursor-pointer"><Plus className="h-3.5 w-3.5" />Añadir</span>
+                  </Button>
+                  <input type="file" accept="video/*" multiple className="hidden" onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }} />
+                </label>
+              </div>
             </div>
+            {recording && (
+              <div className="mb-2 flex items-center gap-2 text-xs text-destructive">
+                <Circle className="h-3 w-3 fill-destructive animate-pulse" />
+                Grabando {recording === "camera" ? "cámara" : "pantalla"}…
+              </div>
+            )}
             {clips.length === 0 ? (
               <div className="border-2 border-dashed border-border rounded-lg p-8 text-center text-muted-foreground text-sm">
                 <Upload className="h-6 w-6 mx-auto mb-2" />
-                Arrastra vídeos aquí o pulsa "Añadir vídeo".
+                Arrastra vídeos aquí, graba con la cámara o pulsa "Añadir".
               </div>
             ) : (
-              <div className="space-y-2">
-                {clips.map((c) => {
-                  const dur = Math.max(0, c.trimEnd - c.trimStart);
-                  return (
-                    <div
-                      key={c.id}
-                      className={`flex items-center gap-2 p-2 rounded border ${selectedClip === c.id ? "border-foreground bg-surface-2" : "border-border bg-surface-1"} cursor-pointer`}
-                      onClick={() => { setSelectedClip(c.id); setSelectedOverlay(null); }}
-                    >
-                      <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm truncate">{c.name}</p>
-                        <p className="text-xs text-muted-foreground">{dur.toFixed(1)}s · vol {Math.round(c.volume*100)}%</p>
+              <>
+                {/* Visual proportional track */}
+                <div className="relative bg-surface-2 rounded-lg p-2 overflow-x-auto">
+                  <div className="relative h-16 flex gap-0.5 min-w-full" style={{ width: `${Math.max(100, totalDuration * 40)}px` }}>
+                    {clips.map((c) => {
+                      const dur = Math.max(0.1, c.trimEnd - c.trimStart);
+                      const widthPct = (dur / Math.max(0.1, totalDuration)) * 100;
+                      const isSel = selectedClip === c.id;
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => { setSelectedClip(c.id); setSelectedOverlay(null); }}
+                          className={`relative h-full rounded overflow-hidden text-left transition-all border-2 ${isSel ? "border-foreground" : "border-transparent hover:border-border"}`}
+                          style={{ width: `${widthPct}%`, minWidth: 40, background: "linear-gradient(135deg, hsl(var(--primary)/0.6), hsl(var(--primary)/0.3))" }}
+                        >
+                          <div className="absolute inset-0 px-1.5 py-1 flex flex-col justify-between">
+                            <span className="text-[10px] text-foreground/90 font-medium truncate">{c.name}</span>
+                            <span className="text-[10px] text-foreground/70 tabular-nums">{dur.toFixed(1)}s</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                    {/* Playhead */}
+                    {totalDuration > 0 && (
+                      <div
+                        className="absolute top-0 bottom-0 w-0.5 bg-destructive pointer-events-none"
+                        style={{ left: `${(tNow / totalDuration) * 100}%` }}
+                      >
+                        <div className="absolute -top-1 -left-[5px] w-3 h-3 rounded-full bg-destructive" />
                       </div>
-                      <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); moveClip(c.id, -1); }}>↑</Button>
-                      <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); moveClip(c.id, 1); }}>↓</Button>
-                      <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); removeClip(c.id); }} className="text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    )}
+                  </div>
+                </div>
+                {/* Order/remove controls */}
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {clips.map((c) => (
+                    <div key={c.id} className={`flex items-center gap-1 px-2 py-1 rounded border text-xs ${selectedClip === c.id ? "border-foreground bg-surface-2" : "border-border bg-surface-1"}`}>
+                      <GripVertical className="h-3 w-3 text-muted-foreground" />
+                      <span className="truncate max-w-[120px]">{c.name}</span>
+                      <button onClick={() => moveClip(c.id, -1)} className="px-1 hover:text-foreground text-muted-foreground">↑</button>
+                      <button onClick={() => moveClip(c.id, 1)} className="px-1 hover:text-foreground text-muted-foreground">↓</button>
+                      <button onClick={() => removeClip(c.id)} className="px-1 text-destructive"><Trash2 className="h-3 w-3" /></button>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
           </Card>
 
