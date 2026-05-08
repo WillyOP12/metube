@@ -61,6 +61,12 @@ const VideoEditorInner = () => {
   const [tNow, setTNow] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const [recording, setRecording] = useState<null | "camera" | "screen">(null);
+  const [recordTime, setRecordTime] = useState(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordChunksRef = useRef<Blob[]>([]);
+  const recordStreamRef = useRef<MediaStream | null>(null);
+  const recordTimerRef = useRef<number | null>(null);
 
   const previewRef = useRef<HTMLCanvasElement>(null);
   const hiddenVideoRef = useRef<HTMLVideoElement>(null);
