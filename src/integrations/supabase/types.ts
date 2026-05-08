@@ -707,6 +707,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_notify_user: {
+        Args: { _link?: string; _message: string; _user_id: string }
+        Returns: undefined
+      }
       delete_my_account: { Args: never; Returns: undefined }
       has_role: {
         Args: {

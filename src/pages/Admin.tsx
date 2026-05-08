@@ -12,8 +12,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Flag, ShieldOff, ShieldCheck, Eye, Trash2, BarChart3, Users, Video as VideoIcon, MessageSquare,
-  ShieldAlert, Search,
+  ShieldAlert, Search, Ban, MessageSquareWarning,
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -120,10 +126,17 @@ const DashboardTab = ({ stats }: { stats: Stats }) => (
   </div>
 );
 
+type ActionMode = "delete" | "suspend";
+
 const ReportsTab = ({ userId, onRefresh }: { userId: string | undefined; onRefresh: () => void }) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [filter, setFilter] = useState<Report["status"] | "all">("pending");
   const [loading, setLoading] = useState(true);
+  const [actionReport, setActionReport] = useState<Report | null>(null);
+  const [actionMode, setActionMode] = useState<ActionMode>("delete");
+  const [message, setMessage] = useState("");
+  const [suspendDays, setSuspendDays] = useState("7");
+  const [submitting, setSubmitting] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -147,6 +160,73 @@ const ReportsTab = ({ userId, onRefresh }: { userId: string | undefined; onRefre
     const { error } = await supabase.from("reports").delete().eq("id", id);
     if (error) toast.error("Error eliminando");
     else { toast.success("Reporte eliminado"); load(); onRefresh(); }
+  };
+
+  // Resolve target -> owner user id and a human label
+  const resolveTarget = async (r: Report): Promise<{ ownerId: string | null; label: string }> => {
+    if (r.target_type === "video") {
+      const { data } = await supabase.from("videos").select("channel_id, title").eq("id", r.target_id).maybeSingle();
+      return { ownerId: data?.channel_id ?? null, label: data?.title ? `el vídeo "${data.title}"` : "el vídeo" };
+    }
+    if (r.target_type === "comment") {
+      const { data } = await supabase.from("comments").select("user_id").eq("id", r.target_id).maybeSingle();
+      return { ownerId: data?.user_id ?? null, label: "tu comentario" };
+    }
+    if (r.target_type === "post") {
+      const { data } = await supabase.from("posts").select("channel_id").eq("id", r.target_id).maybeSingle();
+      return { ownerId: data?.channel_id ?? null, label: "tu publicación" };
+    }
+    return { ownerId: r.target_id, label: "tu cuenta" };
+  };
+
+  const openAction = (r: Report, mode: ActionMode) => {
+    setActionReport(r);
+    setActionMode(mode);
+    setMessage(mode === "delete"
+      ? "Tu contenido ha sido eliminado por incumplir las normas de la comunidad."
+      : "Tu cuenta ha sido suspendida temporalmente por incumplir las normas.");
+    setSuspendDays("7");
+  };
+
+  const runAction = async () => {
+    if (!actionReport) return;
+    setSubmitting(true);
+    const { ownerId, label } = await resolveTarget(actionReport);
+
+    if (actionMode === "delete") {
+      let delErr: any = null;
+      if (actionReport.target_type === "video") {
+        ({ error: delErr } = await supabase.from("videos").delete().eq("id", actionReport.target_id));
+      } else if (actionReport.target_type === "comment") {
+        ({ error: delErr } = await supabase.from("comments").delete().eq("id", actionReport.target_id));
+      } else if (actionReport.target_type === "post") {
+        ({ error: delErr } = await supabase.from("posts").delete().eq("id", actionReport.target_id));
+      } else {
+        delErr = { message: "No se puede borrar un canal desde aquí" };
+      }
+      if (delErr) { setSubmitting(false); return toast.error(delErr.message || "No se pudo eliminar"); }
+      if (ownerId && message.trim()) {
+        await supabase.rpc("admin_notify_user", { _user_id: ownerId, _message: `[Moderación] ${message.trim()} (${label})`, _link: null });
+      }
+      toast.success("Contenido eliminado y autor notificado");
+    } else {
+      if (!ownerId) { setSubmitting(false); return toast.error("No se pudo identificar al autor"); }
+      const days = Math.max(1, parseInt(suspendDays) || 7);
+      const until = new Date(Date.now() + days * 86400000).toISOString();
+      const { error } = await supabase
+        .from("profile_moderation")
+        .upsert({ user_id: ownerId, suspended_until: until, suspension_reason: message.trim() || null, suspended_by: userId });
+      if (error) { setSubmitting(false); return toast.error("No se pudo suspender"); }
+      if (message.trim()) {
+        await supabase.rpc("admin_notify_user", { _user_id: ownerId, _message: `[Moderación] Cuenta suspendida ${days} días: ${message.trim()}`, _link: null });
+      }
+      toast.success(`Cuenta suspendida ${days} días`);
+    }
+
+    await supabase.from("reports").update({ status: "resolved", resolved_by: userId }).eq("id", actionReport.id);
+    setSubmitting(false);
+    setActionReport(null);
+    load(); onRefresh();
   };
 
   return (
@@ -191,6 +271,14 @@ const ReportsTab = ({ userId, onRefresh }: { userId: string | undefined; onRefre
                       <Eye className="h-4 w-4 mr-1" /> Revisar
                     </Button>
                   )}
+                  {r.target_type !== "channel" && (
+                    <Button size="sm" variant="destructive" onClick={() => openAction(r, "delete")}>
+                      <MessageSquareWarning className="h-4 w-4 mr-1" /> Eliminar y avisar
+                    </Button>
+                  )}
+                  <Button size="sm" variant="outline" onClick={() => openAction(r, "suspend")}>
+                    <Ban className="h-4 w-4 mr-1" /> Suspender autor
+                  </Button>
                   {r.status !== "resolved" && (
                     <Button size="sm" onClick={() => updateStatus(r.id, "resolved")}>
                       <ShieldCheck className="h-4 w-4 mr-1" /> Resolver
@@ -210,6 +298,56 @@ const ReportsTab = ({ userId, onRefresh }: { userId: string | undefined; onRefre
           ))}
         </div>
       )}
+
+      <Dialog open={!!actionReport} onOpenChange={(o) => !o && setActionReport(null)}>
+        <DialogContent className="bg-popover border-border">
+          <DialogHeader>
+            <DialogTitle>
+              {actionMode === "delete" ? "Eliminar contenido y notificar" : "Suspender cuenta del autor"}
+            </DialogTitle>
+            <DialogDescription>
+              {actionMode === "delete"
+                ? "Se eliminará el contenido reportado y se enviará un mensaje al autor explicando el motivo."
+                : "La cuenta entrará en modo solo lectura durante el período indicado."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {actionMode === "suspend" && (
+              <div>
+                <Label className="mb-2 block">Duración</Label>
+                <Select value={suspendDays} onValueChange={setSuspendDays}>
+                  <SelectTrigger className="bg-surface-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 día</SelectItem>
+                    <SelectItem value="3">3 días</SelectItem>
+                    <SelectItem value="7">7 días</SelectItem>
+                    <SelectItem value="14">14 días</SelectItem>
+                    <SelectItem value="30">30 días</SelectItem>
+                    <SelectItem value="90">90 días</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div>
+              <Label htmlFor="modmsg" className="mb-2 block">Mensaje al autor</Label>
+              <Textarea
+                id="modmsg"
+                value={message}
+                onChange={(e) => setMessage(e.target.value.slice(0, 500))}
+                className="bg-surface-1 min-h-24"
+                placeholder="Explica el motivo..."
+              />
+              <p className="text-xs text-muted-foreground mt-1">{message.length}/500</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setActionReport(null)}>Cancelar</Button>
+            <Button onClick={runAction} disabled={submitting} variant={actionMode === "delete" ? "destructive" : "default"}>
+              {submitting ? "Aplicando..." : actionMode === "delete" ? "Eliminar y avisar" : "Suspender"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
