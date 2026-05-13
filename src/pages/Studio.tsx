@@ -163,7 +163,7 @@ const StudioInner = () => {
             </RouterLink>
           </Button>
           <Button asChild variant="outline" className="gap-2">
-            <a href={`/c/${user?.id}`} target="_blank" rel="noopener noreferrer">
+            <a href={`/c/${profile?.username ?? user?.id}`} target="_blank" rel="noopener noreferrer">
               <Eye className="h-4 w-4" />Ver mi canal
             </a>
           </Button>
