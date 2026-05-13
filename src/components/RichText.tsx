@@ -123,6 +123,13 @@ const renderMd = (nodes: MdNode[], renderText: (s: string, key: string) => React
     if (n.type === "italic") return <em key={key}>{inner}</em>;
     if (n.type === "strike") return <span key={key} className="line-through opacity-80">{inner}</span>;
     if (n.type === "spoiler") return <Spoiler key={key}>{inner}</Spoiler>;
+    if (n.type === "link") {
+      const href = (n as any).href as string;
+      const internal = href.startsWith("/") ? href : (isInternalLovable(href) ? toInternalPath(href) : null);
+      const cls = "underline underline-offset-2 hover:text-foreground text-foreground/90";
+      if (internal) return <Link key={key} to={internal} className={cls}>{inner}</Link>;
+      return <a key={key} href={href} target="_blank" rel="noopener noreferrer nofollow" className={cls}>{inner}</a>;
+    }
     return null;
   });
 };
