@@ -68,9 +68,11 @@ const Spoiler = ({ children }: { children: ReactNode }) => {
 
 // ---------- Markdown inline parser ----------
 // Supports: **bold**, *italic* (or _italic_), ~~strike~~, `code`, ||spoiler||
-type MdNode = { type: "text" | "bold" | "italic" | "strike" | "code" | "spoiler"; value: string | MdNode[] };
+type MdNode =
+  | { type: "text" | "bold" | "italic" | "strike" | "code" | "spoiler"; value: string | MdNode[] }
+  | { type: "link"; value: MdNode[]; href: string };
 
-const MD_PATTERNS: { type: MdNode["type"]; re: RegExp; raw?: boolean }[] = [
+const MD_PATTERNS: { type: Exclude<MdNode["type"], "link">; re: RegExp; raw?: boolean }[] = [
   { type: "spoiler", re: /\|\|([\s\S]+?)\|\|/ },
   { type: "code", re: /`([^`\n]+?)`/, raw: true },
   { type: "bold", re: /\*\*([\s\S]+?)\*\*/ },
@@ -78,23 +80,34 @@ const MD_PATTERNS: { type: MdNode["type"]; re: RegExp; raw?: boolean }[] = [
   { type: "italic", re: /(?<![A-Za-z0-9_])[*_]([^*_\n]+?)[*_](?![A-Za-z0-9_])/ },
 ];
 
+const LINK_RE = /\[([^\]\n]+?)\]\((\S+?)\)/;
+
 const parseMarkdown = (text: string): MdNode[] => {
   if (!text) return [];
-  // Find earliest pattern match
-  let earliest: { idx: number; len: number; type: MdNode["type"]; inner: string; raw?: boolean } | null = null;
+  let earliest:
+    | { idx: number; len: number; type: MdNode["type"]; inner: string; raw?: boolean; href?: string }
+    | null = null;
   for (const p of MD_PATTERNS) {
     const m = p.re.exec(text);
     if (m && (earliest === null || m.index < earliest.idx)) {
       earliest = { idx: m.index, len: m[0].length, type: p.type, inner: m[1], raw: p.raw };
     }
   }
+  const lm = LINK_RE.exec(text);
+  if (lm && (earliest === null || lm.index < earliest.idx)) {
+    earliest = { idx: lm.index, len: lm[0].length, type: "link", inner: lm[1], href: lm[2] };
+  }
   if (!earliest) return [{ type: "text", value: text }];
   const out: MdNode[] = [];
   if (earliest.idx > 0) out.push({ type: "text", value: text.slice(0, earliest.idx) });
-  out.push({
-    type: earliest.type,
-    value: earliest.raw ? earliest.inner : parseMarkdown(earliest.inner),
-  });
+  if (earliest.type === "link") {
+    out.push({ type: "link", value: parseMarkdown(earliest.inner), href: earliest.href! });
+  } else {
+    out.push({
+      type: earliest.type,
+      value: earliest.raw ? earliest.inner : parseMarkdown(earliest.inner),
+    } as MdNode);
+  }
   out.push(...parseMarkdown(text.slice(earliest.idx + earliest.len)));
   return out;
 };
@@ -110,6 +123,13 @@ const renderMd = (nodes: MdNode[], renderText: (s: string, key: string) => React
     if (n.type === "italic") return <em key={key}>{inner}</em>;
     if (n.type === "strike") return <span key={key} className="line-through opacity-80">{inner}</span>;
     if (n.type === "spoiler") return <Spoiler key={key}>{inner}</Spoiler>;
+    if (n.type === "link") {
+      const href = (n as any).href as string;
+      const internal = href.startsWith("/") ? href : (isInternalLovable(href) ? toInternalPath(href) : null);
+      const cls = "underline underline-offset-2 hover:text-foreground text-foreground/90";
+      if (internal) return <Link key={key} to={internal} className={cls}>{inner}</Link>;
+      return <a key={key} href={href} target="_blank" rel="noopener noreferrer nofollow" className={cls}>{inner}</a>;
+    }
     return null;
   });
 };
