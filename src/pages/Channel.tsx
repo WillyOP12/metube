@@ -13,6 +13,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import type { Profile } from "@/hooks/useProfile";
 import { parseLinks } from "@/lib/links";
+import { isUuid } from "@/lib/channel";
 
 interface PublicPlaylist {
   id: string;
@@ -22,28 +23,42 @@ interface PublicPlaylist {
   video_count: number;
 }
 
+const NO_MATCH_ID = "00000000-0000-0000-0000-000000000000";
+
 const Channel = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: slug } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [resolvedId, setResolvedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [postCount, setPostCount] = useState(0);
   const [publicPlaylists, setPublicPlaylists] = useState<PublicPlaylist[]>([]);
-  const { videos: allVideos, loading: videosLoading } = useVideos({ channelId: id });
+  const channelIdForHooks = resolvedId ?? NO_MATCH_ID;
+  const { videos: allVideos, loading: videosLoading } = useVideos({ channelId: channelIdForHooks });
   const videos = allVideos.filter(v => !v.is_short);
   const shorts = allVideos.filter(v => v.is_short);
-  const { subscribed, count, toggle, isOwner } = useSubscription(id);
+  const { subscribed, count, toggle, isOwner } = useSubscription(resolvedId ?? undefined);
 
   useEffect(() => {
     const load = async () => {
-      if (!id) return;
+      if (!slug) return;
       setLoading(true);
-      const [{ data }, { count: pc }, { data: pls }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
+      setResolvedId(null);
+      const { data } = isUuid(slug)
+        ? await supabase.from("profiles").select("*").eq("id", slug).maybeSingle()
+        : await supabase.from("profiles").select("*").eq("username", slug).maybeSingle();
+      if (!data) {
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+      const id = (data as any).id as string;
+      setResolvedId(id);
+      const [{ count: pc }, { data: pls }] = await Promise.all([
         supabase.from("posts").select("id", { count: "exact", head: true }).eq("channel_id", id),
         supabase.from("playlists").select("id, title, description").eq("owner_id", id).eq("is_public", true).order("created_at", { ascending: false }),
       ]);
-      setProfile(data ? ({ ...(data as any), links: parseLinks((data as any).links) } as Profile) : null);
+      setProfile({ ...(data as any), links: parseLinks((data as any).links) } as Profile);
       setPostCount(pc ?? 0);
 
       const plIds = (pls ?? []).map(p => p.id);
@@ -72,7 +87,8 @@ const Channel = () => {
       if (data?.display_name) document.title = `${data.display_name} — MeTube`;
     };
     load();
-  }, [id]);
+  }, [slug]);
+
 
   if (loading) {
     return <AppLayout><div className="flex items-center justify-center h-64"><div className="h-8 w-8 rounded-full border-2 border-foreground/20 border-t-foreground animate-spin" /></div></AppLayout>;
