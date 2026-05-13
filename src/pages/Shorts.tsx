@@ -57,7 +57,7 @@ const ShortItem = ({ video, active }: { video: VideoWithChannel; active: boolean
 
         {/* Overlay info */}
         <div className="absolute left-0 right-16 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
-          <Link to={`/c/${video.channel_id}`} className="flex items-center gap-2 mb-2">
+          <Link to={`/c/${video.channel?.username ?? video.channel_id}`} className="flex items-center gap-2 mb-2">
             <Avatar className="h-9 w-9 border border-white/20">
               <AvatarImage src={video.channel?.avatar_url ?? undefined} />
               <AvatarFallback className="bg-surface-2 text-xs">{initials}</AvatarFallback>

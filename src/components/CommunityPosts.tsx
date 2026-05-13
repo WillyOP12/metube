@@ -129,7 +129,7 @@ const PostComments = ({ postId }: { postId: string }) => {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 text-xs">
-                  <Link to={`/c/${c.user_id}`} className="font-medium hover:underline">{name}</Link>
+                  <Link to={`/c/${c.author?.username ?? c.user_id}`} className="font-medium hover:underline">{name}</Link>
                   <span className="text-muted-foreground">{formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: es })}</span>
                 </div>
                 <RichText text={c.content} className="text-sm mt-0.5" />

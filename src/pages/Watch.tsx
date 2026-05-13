@@ -115,7 +115,7 @@ const Watch = () => {
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <Link to={`/c/${video.channel_id}`} className="flex items-center gap-3 group">
+              <Link to={`/c/${video.channel?.username ?? video.channel_id}`} className="flex items-center gap-3 group">
                 <Avatar className="h-11 w-11 border border-border">
                   <AvatarImage src={video.channel?.avatar_url ?? undefined} />
                   <AvatarFallback className="bg-surface-2">{initials}</AvatarFallback>

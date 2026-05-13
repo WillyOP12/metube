@@ -147,7 +147,7 @@ const ChannelList = ({ channels }: { channels: ChannelResult[] }) => {
         const name = c.channel_name || c.display_name || c.username || "Canal";
         const initials = name.split(" ").map(s => s[0]).join("").slice(0, 2).toUpperCase();
         return (
-          <Link key={c.id} to={`/c/${c.id}`} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-surface-1 hover:bg-surface-2 transition">
+          <Link key={c.id} to={`/c/${c.username ?? c.id}`} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-surface-1 hover:bg-surface-2 transition">
             <Avatar className="h-12 w-12 border border-border">
               <AvatarImage src={c.avatar_url ?? undefined} />
               <AvatarFallback className="bg-surface-2">{initials}</AvatarFallback>

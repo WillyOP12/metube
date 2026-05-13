@@ -49,6 +49,7 @@ const App = () => (
               <Route path="/upload" element={<Upload />} />
               <Route path="/watch/:id" element={<Watch />} />
               <Route path="/c/:id" element={<Channel />} />
+              <Route path="/u/:id" element={<Channel />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/shorts" element={<Shorts />} />
               <Route path="/shorts/:id" element={<Shorts />} />
